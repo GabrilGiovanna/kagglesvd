@@ -122,7 +122,7 @@ def load_raw_dataset(dataset, data_path = None, index_path = None):
             if rand_item in ret['test_positive_set'][u]: continue
             ret['negatives'][u].add(rand_item)
         ret['negatives'][u] = list(ret['negatives'][u])
-    ret['negatives'] = np.array(ret['negatives'], dtype=np.int32)
+    ret['negatives'] = np.array(ret['negatives'], dtype=np.int16)
 
     ret.update({
         'num_users': num_users,
