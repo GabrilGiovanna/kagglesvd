@@ -6,6 +6,7 @@ from neural_tangents import stax
 import torch
 from torch import nn
 import numpy as np
+import neural_tangents as nt
 
 def make_kernelized_rr_forward(hyper_params):
     _, _, kernel_fn = FullyConnectedNetwork(
