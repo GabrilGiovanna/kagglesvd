@@ -8,7 +8,9 @@ import copy
 import random
 import numpy as np
 import torch
+import jax
 from jax import numpy as jnp
+import jax.experimental.sparse as jax_sparse
 
 import model
 from parse import parse_args
@@ -42,7 +44,9 @@ def train(hyper_params, data):
         print('This model is not supported!')
         exit()
 
-    sampled_matrix = jnp.array(sampled_matrix.todense())
+    #sampled_matrix = jnp.array(sampled_matrix.todense())
+
+    sampled_matrix = jax_sparse.BCOO.from_scipy_sparse(sampled_matrix)
 
     '''
     NOTE: No training required! We will compute dual-variables \alpha on the fly in `kernelized_rr_forward`
@@ -74,8 +78,11 @@ def train(hyper_params, data):
         
         # MSE
         adj_mat = data.data['train_matrix'] + data.data['val_matrix']
-        adj_mat = jnp.array(convert_sp_mat_to_sp_tensor(adj_mat).to_dense())
-        err = (preds - adj_mat) ** 2
+        adj_mat = jnp.array(convert_sp_mat_to_sp_tensor(adj_mat).to_dense(), dtype=jnp.bfloat16)
+        adj_mat_cpu = jax.device_put(adj_mat, jax.devices("cpu")[0])
+        preds_cpu = jax.device_put(preds, jax.devices("cpu")[0])
+
+        err = (preds_cpu - adj_mat_cpu) ** 2
         mse = sum(sum(err)) / (adj_mat.shape[0] * adj_mat.shape[1])
         print("\nMSE value: {}".format(mse))
 
@@ -100,8 +107,11 @@ def train(hyper_params, data):
        
         # MSE
         adj_mat = data.data['train_matrix'] + data.data['val_matrix']
-        adj_mat = jnp.array(convert_sp_mat_to_sp_tensor(adj_mat).to_dense())
-        err = (preds - adj_mat) ** 2
+        adj_mat = jnp.array(convert_sp_mat_to_sp_tensor(adj_mat).to_dense(), dtype=jnp.bfloat16)
+        adj_mat_cpu = jax.device_put(adj_mat, jax.devices("cpu")[0])
+        preds_cpu = jax.device_put(preds, jax.devices("cpu")[0])
+
+        err = (preds_cpu - adj_mat_cpu) ** 2
         mse = sum(sum(err)) / (adj_mat.shape[0] * adj_mat.shape[1])
         print("\nMSE value: {}".format(mse))
 
@@ -119,8 +129,11 @@ def train(hyper_params, data):
         
         # MSE
         adj_mat = data.data['train_matrix'] + data.data['val_matrix']
-        adj_mat = jnp.array(convert_sp_mat_to_sp_tensor(adj_mat).to_dense())
-        err = (preds - adj_mat) ** 2
+        adj_mat = jnp.array(convert_sp_mat_to_sp_tensor(adj_mat).to_dense(), dtype=jnp.bfloat16)
+        adj_mat_cpu = jax.device_put(adj_mat, jax.devices("cpu")[0])
+        preds_cpu = jax.device_put(preds, jax.devices("cpu")[0])
+
+        err = (preds_cpu - adj_mat_cpu) ** 2
         mse = sum(sum(err)) / (adj_mat.shape[0] * adj_mat.shape[1])
         print("\nMSE value: {}".format(mse))
 
@@ -134,7 +147,7 @@ def train(hyper_params, data):
 def main(hyper_params, gpu_id = None):
     if gpu_id is not None: os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_id)
 
-    from jax.config import config
+    from jax import config
     if 'float64' in hyper_params and hyper_params['float64'] == True: config.update('jax_enable_x64', True)
 
     from data import Dataset
