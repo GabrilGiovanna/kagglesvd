@@ -13,7 +13,7 @@ def make_kernelized_rr_forward(hyper_params):
         num_classes=hyper_params['num_items']
     )
     # NOTE: Un-comment this if the dataset size is very big (didn't need it for experiments in the paper)
-    # kernel_fn = nt.batch(kernel_fn, batch_size=128)
+    kernel_fn = nt.batch(kernel_fn, batch_size=128)
     kernel_fn = functools.partial(kernel_fn, get='ntk')
 
     @jax.jit
