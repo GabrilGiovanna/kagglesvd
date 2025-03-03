@@ -122,8 +122,11 @@ def load_raw_dataset(dataset, data_path = None, index_path = None):
             if rand_item in ret['test_positive_set'][u]: continue
             ret['negatives'][u].add(rand_item)
         ret['negatives'][u] = list(ret['negatives'][u])
-    ret['negatives'] = np.array(ret['negatives'], dtype=np.int16)
+    ret['negatives'] = np.array(ret['negatives'], dtype=np.int32)
+    import sys
 
+    size = sum(sys.getsizeof(lst) for lst in ret['negatives'])
+    print(f"Estimated memory usage of negatives list: {size / 1e9:.2f} GB")
     ret.update({
         'num_users': num_users,
         'num_items': num_items,
