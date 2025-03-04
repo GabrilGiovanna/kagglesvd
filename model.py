@@ -19,8 +19,10 @@ def make_kernelized_rr_forward(hyper_params):
 
     @jax.jit
     def kernelized_rr_forward(X_train, X_predict, reg=0.1):
-        K_train = kernel_fn(X_train, X_train) # user * user
-        K_predict = kernel_fn(X_predict, X_train) # user * user
+        #K_train = kernel_fn(X_train, X_train)  # (users × users)
+        #K_predict = kernel_fn(X_predict, X_train)  # (users × users)
+        K_train = kernel_fn(X_train, X_train).astype(jnp.float16)
+        K_predict = kernel_fn(X_predict, X_train).astype(jnp.float16)
         K_reg = (K_train + jnp.abs(reg) * jnp.trace(K_train) * jnp.eye(K_train.shape[0]) / K_train.shape[0]) # user * user
         return jnp.dot(K_predict, sp.linalg.solve(K_reg, X_train, sym_pos=True))
         # sp.linalg.solve(K_reg, X_train, sym_pos=True)) -> user * item
@@ -71,6 +73,7 @@ class SVD_AE(nn.Module):
 
     def forward(self, lambda_mat):
         A = self.item_sv @ (torch.diag(1/lambda_mat)) @ self.user_sv.T
-        rating = torch.mm(self.norm_adj, A @ self.adj_mat.to_dense())
+        #rating = torch.mm(self.norm_adj, A @ self.adj_mat.to_dense())
+        rating = torch.sparse.mm(self.norm_adj, A @ self.adj_mat)
         # torch.inverse(torch.diag(lambda_mat))
         return rating
