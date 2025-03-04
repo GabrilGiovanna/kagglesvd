@@ -117,7 +117,7 @@ class SVD_AE(nn.Module):
                 intermediate_result = intermediate_result.to_sparse()
 
             print("Computing norm_adj @ intermediate_result...")
-            rating = torch.sparse.mm(self.norm_adj, intermediate_result)
+            rating = torch.sparse.mm(self.norm_adj.float(), intermediate_result.float())
             
             pbar.update(1)
 
