@@ -101,7 +101,8 @@ class SVD_AE(nn.Module):
                 self.norm_adj = self.norm_adj.to_sparse()
             sparsity = 1.0 - (self.norm_adj._nnz() / float(self.norm_adj.shape[0] * self.norm_adj.shape[1]))
             print("Computing sparse multiplication (Step 1)...")
-            A_sparse = (A @ self.adj_mat).to_sparse()
+            #A_sparse = (A @ self.adj_mat).to_sparse()
+            A_sparse = torch.sparse.mm(self.adj_mat.to_sparse(), A.T).T
             print(f"Sparsity of norm_adj: {sparsity:.6f}")   
             print("Computing sparse multiplication (Step 2)...")
             rating = torch.sparse.mm(self.norm_adj, A_sparse)
