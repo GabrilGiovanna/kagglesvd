@@ -100,7 +100,7 @@ class SVD_AE(nn.Module):
             import torch.profiler
 
             with torch.profiler.profile(record_shapes=True) as prof:
-            rating = torch.sparse.mm(self.norm_adj, A @ self.adj_mat)
+                rating = torch.sparse.mm(self.norm_adj, A @ self.adj_mat)
             print(prof.key_averages().table(sort_by="cpu_time_total"))
 
 
