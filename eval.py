@@ -87,7 +87,8 @@ def evaluate_batch(auc_negatives, logits, train_positive, test_positive_set, ite
     # AUC Stuff
     temp_preds, temp_y = [], []
     for b in range(len(logits)):
-        temp_preds += np.take(logits[b], np.array(list(test_positive_set[b]))).tolist()
+        #temp_preds += np.take(logits[b], np.array(list(test_positive_set[b]))).tolist()
+        temp_preds += np.take(logits[b], np.array(list(test_positive_set[b]), dtype=int)).tolist()
         temp_y += [ 1.0 for _ in range(len(test_positive_set[b])) ]
 
         temp_preds += np.take(logits[b], auc_negatives[b]).tolist()
