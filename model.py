@@ -67,9 +67,16 @@ class EASE(nn.Module):
         G = self.item_adj
         diagIndices = np.diag_indices(G.shape[0])
         G[diagIndices] += lambda_
-        P = torch.inverse(G)
+
+        print("Inverting the matrix (this may take time)...")
+        with tqdm(total=1) as pbar:
+            P = torch.linalg.solve(G, torch.eye(G.shape[0], device=G.device))  # Avoid inverse
+            pbar.update(1)
+
         B = P / (-torch.diag(P))
         B[diagIndices] = 0
+
+        print("Computing final rating matrix...")
         rating = torch.mm(self.adj_mat, B)
 
         return rating
@@ -79,12 +86,18 @@ class SVD_AE(nn.Module):
         super(SVD_AE, self).__init__()
         self.adj_mat = adj_mat.to(device)
         self.norm_adj = norm_adj.to(device)
-        self.user_sv = user_sv.to(device) # (K, M)
-        self.item_sv = item_sv.to(device) # (K, N)
+        self.user_sv = user_sv.to(device)  # (K, M)
+        self.item_sv = item_sv.to(device)  # (K, N)
 
     def forward(self, lambda_mat):
-        A = self.item_sv @ (torch.diag(1/lambda_mat)) @ self.user_sv.T
-        #rating = torch.mm(self.norm_adj, A @ self.adj_mat.to_dense())
-        rating = torch.sparse.mm(self.norm_adj, A @ self.adj_mat)
-        # torch.inverse(torch.diag(lambda_mat))
+        print("Computing A matrix...")
+        with tqdm(total=1) as pbar:
+            A = self.item_sv @ (torch.diag(1/lambda_mat)) @ self.user_sv.T
+            pbar.update(1)
+
+        print("Computing sparse matrix multiplication...")
+        with tqdm(total=1) as pbar:
+            rating = torch.sparse.mm(self.norm_adj, A @ self.adj_mat)
+            pbar.update(1)
+
         return rating
