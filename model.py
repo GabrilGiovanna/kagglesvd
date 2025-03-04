@@ -97,6 +97,9 @@ class SVD_AE(nn.Module):
 
         print("Computing sparse matrix multiplication...")
         with tqdm(total=1) as pbar:
+            sparsity = 1.0 - (self.norm_adj._nnz() / float(self.norm_adj.shape[0] * self.norm_adj.shape[1]))
+            print(f"Sparsity of norm_adj: {sparsity:.6f}")
+
             rating = torch.sparse.mm(self.norm_adj, A @ self.adj_mat)
             #rating = torch.mm(self.norm_adj, A @ self.adj_mat.to_dense())
             pbar.update(1)
