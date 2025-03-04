@@ -89,22 +89,36 @@ class SVD_AE(nn.Module):
         self.user_sv = user_sv.to(device)  # (K, M)
         self.item_sv = item_sv.to(device)  # (K, N)
 
+        # Ensure norm_adj is sparse from the start
+        if not self.norm_adj.is_sparse:
+            self.norm_adj = self.norm_adj.to_sparse()
+
+        # Print sparsity only once
+        sparsity = 1.0 - (self.norm_adj._nnz() / float(self.norm_adj.shape[0] * self.norm_adj.shape[1]))
+        print(f"Initial sparsity of norm_adj: {sparsity:.6f}")
+
     def forward(self, lambda_mat):
         print("Computing A matrix...")
         with tqdm(total=1) as pbar:
-            A = self.item_sv @ (torch.diag(1/lambda_mat)) @ self.user_sv.T
+            A = self.item_sv @ (torch.diag(1 / lambda_mat)) @ self.user_sv.T
             pbar.update(1)
 
         print("Computing sparse matrix multiplication...")
         with tqdm(total=1) as pbar:
-            if not self.norm_adj.is_sparse:
-                self.norm_adj = self.norm_adj.to_sparse()
+            # Convert A to half precision before multiplication to save memory
+            A = A.half()
+            self.norm_adj = self.norm_adj.half()
+            
+            print("Computing A @ adj_mat...")
+            intermediate_result = A @ self.adj_mat
 
-            sparsity = 1.0 - (self.norm_adj._nnz() / float(self.norm_adj.shape[0] * self.norm_adj.shape[1]))
-            print(f"Sparsity of norm_adj: {sparsity:.6f}")
+            # Convert intermediate result to sparse only if necessary
+            if intermediate_result.numel() > 1e6:  # Heuristic for large matrices
+                intermediate_result = intermediate_result.to_sparse()
 
-            rating = torch.sparse.mm(self.norm_adj, A @ self.adj_mat)
-            #rating = torch.mm(self.norm_adj, A @ self.adj_mat.to_dense())
+            print("Computing norm_adj @ intermediate_result...")
+            rating = torch.sparse.mm(self.norm_adj, intermediate_result)
+            
             pbar.update(1)
 
         return rating
