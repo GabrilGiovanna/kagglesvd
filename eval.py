@@ -52,7 +52,7 @@ def evaluate(rating, hyper_params, kernelized_rr_forward, data, item_propensity,
             train_positive_list[i:i+bsz], to_predict[i:i+bsz], item_propensity, 
             topk, metrics
         )
-        print(to_predict[i:i+bsz])
+        #print(to_predict[i:i+bsz])
         preds += temp_preds
         y_binary += temp_y
 
