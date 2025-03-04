@@ -8,26 +8,37 @@ from torch import nn
 import numpy as np
 import neural_tangents as nt
 
+from tqdm import tqdm
+
 def make_kernelized_rr_forward(hyper_params):
     _, _, kernel_fn = FullyConnectedNetwork(
         depth=hyper_params['depth'],
         num_classes=hyper_params['num_items']
     )
-    # NOTE: Un-comment this if the dataset size is very big (didn't need it for experiments in the paper)
+    
     kernel_fn = nt.batch(kernel_fn, batch_size=128)
     kernel_fn = functools.partial(kernel_fn, get='ntk')
 
     @jax.jit
     def kernelized_rr_forward(X_train, X_predict, reg=0.1):
-        #K_train = kernel_fn(X_train, X_train)  # (users × users)
-        #K_predict = kernel_fn(X_predict, X_train)  # (users × users)
-        K_train = kernel_fn(X_train, X_train).astype(jnp.float16)
-        K_predict = kernel_fn(X_predict, X_train).astype(jnp.float16)
-        K_reg = (K_train + jnp.abs(reg) * jnp.trace(K_train) * jnp.eye(K_train.shape[0]) / K_train.shape[0]) # user * user
+        num_users = X_train.shape[0]
+        
+        print("Computing K_train (this may take time)...")
+        with tqdm(total=num_users) as pbar:
+            K_train = kernel_fn(X_train, X_train).astype(jnp.float16)
+            pbar.update(num_users)  # Since it's one big operation
+        
+        print("Computing K_predict...")
+        with tqdm(total=num_users) as pbar:
+            K_predict = kernel_fn(X_predict, X_train).astype(jnp.float16)
+            pbar.update(num_users)
+
+        K_reg = (K_train + jnp.abs(reg) * jnp.trace(K_train) * jnp.eye(K_train.shape[0]) / K_train.shape[0])
+
         return jnp.dot(K_predict, sp.linalg.solve(K_reg, X_train, sym_pos=True))
-        # sp.linalg.solve(K_reg, X_train, sym_pos=True)) -> user * item
 
     return kernelized_rr_forward, kernel_fn
+
 
 def FullyConnectedNetwork( 
     depth,
