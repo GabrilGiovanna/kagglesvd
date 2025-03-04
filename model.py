@@ -100,7 +100,7 @@ class SVD_AE(nn.Module):
             from jax import profiler
 
             # To view profiling information
-            profiler.start_trace()
+            profiler.start_trace(None)
             rating = jax.sparse.mm(self.norm_adj, A @ self.adj_mat)
             profiler.stop_trace()  
             #rating = torch.mm(self.norm_adj, A @ self.adj_mat.to_dense())
