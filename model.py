@@ -97,6 +97,9 @@ class SVD_AE(nn.Module):
 
         print("Computing sparse matrix multiplication...")
         with tqdm(total=1) as pbar:
+            if not self.norm_adj.is_sparse:
+                self.norm_adj = self.norm_adj.to_sparse()
+
             sparsity = 1.0 - (self.norm_adj._nnz() / float(self.norm_adj.shape[0] * self.norm_adj.shape[1]))
             print(f"Sparsity of norm_adj: {sparsity:.6f}")
 
