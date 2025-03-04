@@ -97,12 +97,14 @@ class SVD_AE(nn.Module):
 
         print("Computing sparse matrix multiplication...")
         with tqdm(total=1) as pbar:
-            from jax import profiler
+            import torch.profiler
 
-            # To view profiling information
-            profiler.start_trace(None)
-            rating = jax.sparse.mm(self.norm_adj, A @ self.adj_mat)
-            profiler.stop_trace()  
+            with torch.profiler.profile(record_shapes=True) as prof:
+            rating = torch.sparse.mm(self.norm_adj, A @ self.adj_mat)
+            print(prof.key_averages().table(sort_by="cpu_time_total"))
+
+
+            
             #rating = torch.mm(self.norm_adj, A @ self.adj_mat.to_dense())
             pbar.update(1)
 
