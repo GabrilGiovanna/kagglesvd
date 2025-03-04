@@ -32,14 +32,16 @@ def evaluate(rating, hyper_params, kernelized_rr_forward, data, item_propensity,
 
     for i in range(0, hyper_params['num_users'], bsz):
         if hyper_params['model'] == 'ease' or hyper_params['model'] == 'svd-ae':
+            #import jax.experimental.sparse as jax_sparse
+            temp_preds = rating
             #temp_preds = jnp.array(rating.cpu())
-            temp_preds = jnp.array(rating.to_dense().cpu())
-            temp_preds_copy = temp_preds.copy()
+            #temp_preds = jnp.array(rating.to_dense().cpu())
+            #temp_preds_copy = temp_preds.copy()
             predicted_rating = temp_preds
         else:
             train_start_time = time.time()
             temp_preds = kernelized_rr_forward(train_x, eval_context[i:i+bsz].todense(), reg = hyper_params['lamda'])
-            temp_preds_copy = temp_preds.copy()
+            #temp_preds_copy = temp_preds.copy()
             temp_train_time = time.time() - train_start_time
             train_time += temp_train_time
             predicted_rating = temp_preds # predicted_rating_score
