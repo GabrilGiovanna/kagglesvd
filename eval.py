@@ -35,8 +35,8 @@ def evaluate(rating, hyper_params, kernelized_rr_forward, data, item_propensity,
             #import jax.experimental.sparse as jax_sparse
             #temp_preds = jax_sparse.BCOO.from_scipy_sparse(rating.to_sparse().cpu().coalesce().to_scipy())
             #temp_preds=jax_sparse.BCOO.from_scipy_sparse(rating)
-            #temp_preds = rating
-            temp_preds = jnp.array(rating)
+            temp_preds = rating
+            #temp_preds = jnp.array(rating)
             #temp_preds = jnp.array(rating.to_dense().cpu())
             #temp_preds_copy = temp_preds.copy()
             predicted_rating = temp_preds
