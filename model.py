@@ -110,7 +110,7 @@ class SVD_AE(nn.Module):
             self.norm_adj = self.norm_adj.half()
             
             print("Computing A @ adj_mat...")
-            intermediate_result = A @ self.adj_mat
+            intermediate_result = (A @ self.adj_mat.half())  # Convert adj_mat to half to match A
 
             # Convert intermediate result to sparse only if necessary
             if intermediate_result.numel() > 1e6:  # Heuristic for large matrices
