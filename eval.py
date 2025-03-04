@@ -32,26 +32,13 @@ def evaluate(rating, hyper_params, kernelized_rr_forward, data, item_propensity,
 
     for i in range(0, hyper_params['num_users'], bsz):
         if hyper_params['model'] == 'ease' or hyper_params['model'] == 'svd-ae':
-            import jax.experimental.sparse as jax_sparse
+            #import jax.experimental.sparse as jax_sparse
             #temp_preds = jax_sparse.BCOO.from_scipy_sparse(rating.to_sparse().cpu().coalesce().to_scipy())
             #temp_preds=jax_sparse.BCOO.from_scipy_sparse(rating)
             #temp_preds = rating
             #temp_preds = jnp.array(rating.cpu())
-            #temp_preds = jnp.array(rating.to_dense().cpu())
+            temp_preds = jnp.array(rating.to_dense().cpu())
             #temp_preds_copy = temp_preds.copy()
-            import scipy.sparse as sp
-
-            # Ensure rating is a sparse tensor
-            rating_sparse = rating.to_sparse().cpu().coalesce()
-
-            # Convert PyTorch sparse tensor to SciPy sparse matrix
-            rating_scipy = sp.coo_matrix(
-                (rating_sparse.values().numpy(), (rating_sparse.indices()[0].numpy(), rating_sparse.indices()[1].numpy())),
-                shape=rating_sparse.shape
-            )
-
-            # Convert to JAX sparse format
-            temp_preds = jax.experimental.sparse.BCOO.from_scipy_sparse(rating_scipy)
             predicted_rating = temp_preds
         else:
             train_start_time = time.time()
