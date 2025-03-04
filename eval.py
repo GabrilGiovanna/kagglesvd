@@ -32,7 +32,8 @@ def evaluate(rating, hyper_params, kernelized_rr_forward, data, item_propensity,
 
     for i in range(0, hyper_params['num_users'], bsz):
         if hyper_params['model'] == 'ease' or hyper_params['model'] == 'svd-ae':
-            temp_preds = jnp.array(rating.cpu())
+            #temp_preds = jnp.array(rating.cpu())
+            temp_preds = jnp.array(rating.to_dense().cpu())
             temp_preds_copy = temp_preds.copy()
             predicted_rating = temp_preds
         else:
