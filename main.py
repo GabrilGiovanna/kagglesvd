@@ -78,7 +78,8 @@ def train(hyper_params, data):
         
         # MSE
         adj_mat = data.data['train_matrix'] + data.data['val_matrix']
-        adj_mat = jnp.array(convert_sp_mat_to_sp_tensor(adj_mat).to_dense(), dtype=jnp.bfloat16)
+        #adj_mat = jnp.array(convert_sp_mat_to_sp_tensor(adj_mat).to_dense(), dtype=jnp.bfloat16)
+        adj_mat = convert_sp_mat_to_sp_tensor(adj_mat).to_dense()
         #adj_mat_cpu = jax.device_put(adj_mat, jax.devices("cpu")[0])
         #preds_cpu = jax.device_put(preds, jax.devices("cpu")[0])
 
