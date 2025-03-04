@@ -32,9 +32,10 @@ def evaluate(rating, hyper_params, kernelized_rr_forward, data, item_propensity,
 
     for i in range(0, hyper_params['num_users'], bsz):
         if hyper_params['model'] == 'ease' or hyper_params['model'] == 'svd-ae':
-            #import jax.experimental.sparse as jax_sparse
+            import jax.experimental.sparse as jax_sparse
+            temp_preds = jax_sparse.BCOO.from_scipy_sparse(rating.to_sparse().cpu().coalesce().to_scipy())
             #temp_preds=jax_sparse.BCOO.from_scipy_sparse(rating)
-            temp_preds = rating
+            #temp_preds = rating
             #temp_preds = jnp.array(rating.cpu())
             #temp_preds = jnp.array(rating.to_dense().cpu())
             #temp_preds_copy = temp_preds.copy()
