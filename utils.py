@@ -134,7 +134,7 @@ def preprocess_svd(LOAD, dataset, adj_mat, k, path, device):
         from scipy.sparse.linalg import svds
 
         # Convert sparse tensor to NumPy for efficient computation
-        norm_adj_np = norm_adj.cpu().numpy().astype(np.float32)
+        norm_adj_np = norm_adj.to_dense().cpu().numpy().astype(np.float32)
 
         # Compute SVD using SciPy (much faster for sparse matrices)
         ut, s, vt = svds(norm_adj_np, k=k)
