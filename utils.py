@@ -149,9 +149,12 @@ def preprocess_svd(LOAD, dataset, adj_mat, k, path, device):
         #np.save(file_list[1], s.cpu().numpy())
         #np.save(file_list[2], vt.cpu().numpy())
         print('Saving eigenvectors and eigenvalues!')
-        np.savez_compressed(file_list[0], ut.cpu().numpy())
-        np.savez_compressed(file_list[1], s.cpu().numpy())
-        np.savez_compressed(file_list[2], vt.cpu().numpy())
+        np.savez_compressed(file_list[0], ut)
+        np.savez_compressed(file_list[1], ut)
+        np.savez_compressed(file_list[2], ut)
+        #np.savez_compressed(file_list[0], ut.cpu().numpy())
+        #np.savez_compressed(file_list[1], s.cpu().numpy())
+        #np.savez_compressed(file_list[2], vt.cpu().numpy())
 
 
     # norm_adj = norm_adj.to_dense()
