@@ -134,16 +134,16 @@ class SVD_AE(nn.Module):
             # Compute batch-wise interaction
             batch_ratings = torch.mm(batch_item_sv, scaled_user_sv) # (batch_size, user_size)
 
-            for start_adj_mat in tqdm(range(0, self.adj_mat.shape[1], self.batch_size)):
-                #print(f"Step 1: start_adj_mat{start_adj_mat}\n")
+            for start_adj_mat in range(0, self.adj_mat.shape[1], self.batch_size):
+                print(f"Step 1: start_adj_mat{start_adj_mat}\n")
                 end_adj_mat = min(start_adj_mat + self.batch_size, num_items)
                 # Slice adj_mat and norm_adj
                 adj_mat_batch = self.__slice_sparse_columns(self.adj_mat, range(start_adj_mat, end_adj_mat))
 
                 # Apply adjacency matrices
                 batch_ratings_adj = torch.mm(batch_ratings, adj_mat_batch.to_dense())
-                for start_norm_adj in tqdm(range(0, self.norm_adj.shape[0], self.batch_size)):
-                    #print(f"Step 2: start_norm_adj{start_norm_adj}\n")
+                for start_norm_adj in range(0, self.norm_adj.shape[0], self.batch_size):
+                    print(f"Step 2: start_norm_adj{start_norm_adj}\n")
                     end_norm_adj = min(start_norm_adj + self.batch_size, num_users)
                     norm_adj_batch = self.__slice_sparse_rows(self.norm_adj, range(start_norm_adj, end_norm_adj))
                     rating[start_norm_adj:end_norm_adj, start_adj_mat:end_adj_mat] += norm_adj_batch.to_dense()[:, start_item_sv:end_item_sv] @ batch_ratings_adj

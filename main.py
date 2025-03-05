@@ -93,8 +93,8 @@ def train(hyper_params, data):
         from tqdm import tqdm
 
         # Convert to a PyTorch sparse tensor (keeping everything on CPU)
-        adj_mat = torch.tensor(adj_mat.toarray(), dtype=torch.float32)  # No CUDA
-        preds = torch.tensor(preds, dtype=torch.float32)  # Ensure preds is a tensor
+        adj_mat = torch.tensor(adj_mat.toarray(), dtype=torch.float16)  # No CUDA
+        preds = torch.tensor(preds, dtype=torch.float16)  # Ensure preds is a tensor
 
         # Compute MSE in batches
         print("Computing MSE in Batches")
