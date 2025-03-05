@@ -81,13 +81,24 @@ def train(hyper_params, data):
         print("Computing MSE")
         adj_mat = data.data['train_matrix'] + data.data['val_matrix']
         #adj_mat = jnp.array(convert_sp_mat_to_sp_tensor(adj_mat).to_dense(), dtype=jnp.bfloat16)
-        print("Converting to dense")
-        adj_mat = convert_sp_mat_to_sp_tensor(adj_mat).to_dense()
+        #print("Converting to dense")
+        #adj_mat = convert_sp_mat_to_sp_tensor(adj_mat).to_dense()
         #adj_mat_cpu = jax.device_put(adj_mat, jax.devices("cpu")[0])
         #preds_cpu = jax.device_put(preds, jax.devices("cpu")[0])
 
-        err = (preds - adj_mat) ** 2
-        mse = sum(sum(err)) / (adj_mat.shape[0] * adj_mat.shape[1])
+        #err = (preds - adj_mat) ** 2
+        #mse = sum(sum(err)) / (adj_mat.shape[0] * adj_mat.shape[1])
+        print("Computing MSE in Batches")
+        batch_size = 1000  # Adjust based on memory
+        mse_values = []
+        from tqdm import tqdm
+        for i in tqdm(range(0, adj_mat.shape[0], batch_size)):
+            adj_batch = adj_mat[i : i + batch_size].to_dense()
+            preds_batch = preds[i : i + batch_size]
+            err = (preds_batch - adj_batch) ** 2
+            mse_values.append(err.sum())
+
+        mse = sum(mse_values) / (adj_mat.shape[0] * adj_mat.shape[1])
         print("\nMSE value: {}".format(mse))
 
 
