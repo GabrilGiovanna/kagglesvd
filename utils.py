@@ -101,6 +101,7 @@ def preprocess_ease(adj_mat, device):
 
 def preprocess_svd(LOAD, dataset, adj_mat, k, path, device):
     # start = time.time()
+    print("Pre-processing for SVD!")
     file_list = get_file_name(dataset, k, path)
     rowsum = np.array(adj_mat.sum(axis=1))
     rowsum = np.where(rowsum == 0.0, 1.0, rowsum)  # Do not divide by zero
@@ -129,13 +130,19 @@ def preprocess_svd(LOAD, dataset, adj_mat, k, path, device):
             exit()
     else:
         start = time.time()
+        print("Calculating eigenvectors and eigenvalues!")
         ut, s, vt = torch.svd_lowrank(norm_adj, q=k, niter=2, M=None)
         end = time.time()
         if not os.path.isdir(path):
             os.makedirs(path)
-        np.save(file_list[0], ut.cpu().numpy())
-        np.save(file_list[1], s.cpu().numpy())
-        np.save(file_list[2], vt.cpu().numpy())
+        #np.save(file_list[0], ut.cpu().numpy())
+        #np.save(file_list[1], s.cpu().numpy())
+        #np.save(file_list[2], vt.cpu().numpy())
+        print('Saving eigenvectors and eigenvalues!')
+        np.savez_compressed(file_list[0], ut.cpu().numpy())
+        np.savez_compressed(file_list[1], s.cpu().numpy())
+        np.savez_compressed(file_list[2], vt.cpu().numpy())
+
 
     # norm_adj = norm_adj.to_dense()
     ut = torch.FloatTensor(ut)
