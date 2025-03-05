@@ -26,8 +26,8 @@ def evaluate(rating, hyper_params, kernelized_rr_forward, data, item_propensity,
     to_predict = data.data['val_positive_set']
     if test_set_eval: to_predict = data.data['test_positive_set']
 
-    #bsz = hyper_params['num_users']
-    bsz = 100000
+    bsz = hyper_params['num_users']
+    #bsz = 100000
     # bsz = 20_000 # These many users
     
     train_time = 0
