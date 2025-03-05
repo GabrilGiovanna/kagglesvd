@@ -135,6 +135,7 @@ def preprocess_svd(LOAD, dataset, adj_mat, k, path, device):
         from scipy.sparse.linalg import svds
 
 # Convert PyTorch sparse tensor to SciPy sparse matrix directly
+        norm_adj = norm_adj.coalesce()
         norm_adj_sparse = sp.csr_matrix((norm_adj.values().cpu().numpy(),
                                  norm_adj.indices().cpu().numpy()), 
                                  shape=norm_adj.shape)
