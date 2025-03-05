@@ -184,6 +184,11 @@ def main(hyper_params, gpu_id = None):
     return train(hyper_params, data)
 
 if __name__ == "__main__":
+    from grouping import FCMWithPCCGrouping
+    from dataset import SteamRSDataset
+    rs_dataset = SteamRSDataset()
+    dataset = FCMWithPCCGrouping()
+    print("Hello\n")
     from hyper_params import hyper_params
     set_seed(hyper_params['seed'])
     GPU = torch.cuda.is_available()
