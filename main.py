@@ -76,9 +76,12 @@ def train(hyper_params, data):
         rating = train_model(s)
         test_metrics, preds = evaluate(rating, hyper_params, kernelized_rr_forward, data, item_propensity, None, test_set_eval = True)
         
+
         # MSE
+        print("Computing MSE")
         adj_mat = data.data['train_matrix'] + data.data['val_matrix']
         #adj_mat = jnp.array(convert_sp_mat_to_sp_tensor(adj_mat).to_dense(), dtype=jnp.bfloat16)
+        print("Converting to dense")
         adj_mat = convert_sp_mat_to_sp_tensor(adj_mat).to_dense()
         #adj_mat_cpu = jax.device_put(adj_mat, jax.devices("cpu")[0])
         #preds_cpu = jax.device_put(preds, jax.devices("cpu")[0])
