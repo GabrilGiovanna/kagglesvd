@@ -81,51 +81,66 @@ def evaluate(rating, hyper_params, kernelized_rr_forward, data, item_propensity,
 
     return metrics, predicted_rating
 
-def evaluate_batch(auc_negatives, logits, train_positive, test_positive_set, item_propensity, topk, metrics, train_metrics = False):
-    '''
-    logits: predicted rating matrix
-    train_positive: list of train postivie items
-    test_positive_set: list of test postivie items
-    '''
-    # AUC Stuff
+import torch
+
+INF = float(1e6)
+
+def evaluate_batch(auc_negatives, logits, train_positive, test_positive_set, item_propensity, topk, metrics, train_metrics=False):
+    """
+    logits: predicted rating tensor (batch_size, num_items)
+    train_positive: list of train positive items
+    test_positive_set: list of test positive items
+    """
     temp_preds, temp_y = [], []
+    logits = torch.tensor(logits)  # Ensure logits is a tensor
+    
     for b in range(len(logits)):
-        #temp_preds += np.take(logits[b], np.array(list(test_positive_set[b]))).tolist()
-        temp_preds += np.take(logits[b], np.array(list(test_positive_set[b]), dtype=int)).tolist()
-        temp_y += [ 1.0 for _ in range(len(test_positive_set[b])) ]
+        test_indices = torch.tensor(list(test_positive_set[b]), dtype=torch.long)
+        temp_preds.append(logits[b, test_indices])
+        temp_y.extend([1.0] * len(test_positive_set[b]))
 
-        temp_preds += np.take(logits[b], auc_negatives[b]).tolist()
-        temp_y += [ 0.0 for _ in range(len(auc_negatives[b])) ]
-
+        neg_indices = torch.tensor(auc_negatives[b], dtype=torch.long)
+        temp_preds.append(logits[b, neg_indices])
+        temp_y.extend([0.0] * len(auc_negatives[b]))
+    
+    temp_preds = torch.cat(temp_preds).tolist()
+    
     # Marking train-set consumed items as negative INF
-    for b in range(len(logits)): logits[b][ train_positive[b] ] = -INF
-    indices = (-logits).argsort()[:, :max(topk)].tolist()
-
-    for k in topk: 
+    for b in range(len(logits)):
+        logits[b, train_positive[b]] = -INF
+    
+    # Use torch.topk instead of sorting manually
+    _, indices = torch.topk(logits, max(topk), dim=1, largest=True, sorted=True)
+    
+    for k in topk:
         for b in range(len(logits)):
             num_pos = float(len(test_positive_set[b]))
-            if num_pos == 0: 
+            if num_pos == 0:
                 continue
-            metrics['HR@{}'.format(k)] += float(len(set(indices[b][:k]) & test_positive_set[b])) / float(min(num_pos, k))
-            metrics['RECALL@{}'.format(k)] += float(len(set(indices[b][:k]) & test_positive_set[b])) / float(num_pos)
-            metrics['PRECISION@{}'.format(k)] += float(len(set(indices[b][:k]) & test_positive_set[b])) / float(k)
-
-            test_positive_sorted_psp = sorted([ item_propensity[x] for x in test_positive_set[b] ])[::-1]
-
+            
+            top_k_set = set(indices[b, :k].tolist())
+            test_set = set(test_positive_set[b])
+            
+            metrics[f'HR@{k}'] += len(top_k_set & test_set) / float(min(num_pos, k))
+            metrics[f'RECALL@{k}'] += len(top_k_set & test_set) / float(num_pos)
+            metrics[f'PRECISION@{k}'] += len(top_k_set & test_set) / float(k)
+            
+            test_positive_sorted_psp = sorted([item_propensity[x] for x in test_positive_set[b]], reverse=True)
+            
             dcg, idcg, psp, max_psp = 0.0, 0.0, 0.0, 0.0
-            for at, pred in enumerate(indices[b][:k]):
-                if pred in test_positive_set[b]: 
-                    dcg += 1.0 / np.log2(at + 2)
-                    psp += float(item_propensity[pred]) / float(min(num_pos, k))
-                if at < num_pos: 
-                    idcg += 1.0 / np.log2(at + 2)
+            for at, pred in enumerate(indices[b, :k]):
+                if pred.item() in test_set:
+                    dcg += 1.0 / torch.log2(torch.tensor(at + 2.0))
+                    psp += float(item_propensity[pred.item()]) / float(min(num_pos, k))
+                if at < num_pos:
+                    idcg += 1.0 / torch.log2(torch.tensor(at + 2.0))
                     max_psp += test_positive_sorted_psp[at]
-
-            metrics['NDCG@{}'.format(k)] += dcg / idcg
-            metrics['PSP@{}'.format(k)] += psp / max_psp
-
+            
+            metrics[f'NDCG@{k}'] += dcg / idcg if idcg > 0 else 0
+            metrics[f'PSP@{k}'] += psp / max_psp if max_psp > 0 else 0
+    
     return metrics, temp_preds, temp_y
-
+    
 @jit(float64(float64[:], float64[:]))
 def fast_auc(y_true, y_prob):
     y_true = y_true[np.argsort(y_prob)]
