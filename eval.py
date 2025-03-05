@@ -104,6 +104,8 @@ def evaluate_batch(auc_negatives, logits, train_positive, test_positive_set, ite
     for k in topk: 
         for b in range(len(logits)):
             num_pos = float(len(test_positive_set[b]))
+            if num_pos == 0: 
+                continue
             metrics['HR@{}'.format(k)] += float(len(set(indices[b][:k]) & test_positive_set[b])) / float(min(num_pos, k))
             metrics['RECALL@{}'.format(k)] += float(len(set(indices[b][:k]) & test_positive_set[b])) / float(num_pos)
             metrics['PRECISION@{}'.format(k)] += float(len(set(indices[b][:k]) & test_positive_set[b])) / float(k)
