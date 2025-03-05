@@ -88,15 +88,24 @@ def train(hyper_params, data):
 
         #err = (preds - adj_mat) ** 2
         #mse = sum(sum(err)) / (adj_mat.shape[0] * adj_mat.shape[1])
-        print("Computing MSE in Batches")
-        batch_size = 1000  # Adjust based on memory
-        mse_values = []
+        import torch
+        import numpy as np
         from tqdm import tqdm
+
+        # Convert to a PyTorch sparse tensor (keeping everything on CPU)
+        adj_mat = torch.tensor(adj_mat.toarray(), dtype=torch.float32)  # No CUDA
+        preds = torch.tensor(preds, dtype=torch.float32)  # Ensure preds is a tensor
+
+        # Compute MSE in batches
+        print("Computing MSE in Batches")
+        batch_size = 1000  # Adjust based on available memory
+        mse_values = []
+
         for i in tqdm(range(0, adj_mat.shape[0], batch_size)):
-            adj_batch = adj_mat[i : i + batch_size].to_dense()
+            adj_batch = adj_mat[i : i + batch_size]  # No need for `.to_dense()`
             preds_batch = preds[i : i + batch_size]
             err = (preds_batch - adj_batch) ** 2
-            mse_values.append(err.sum())
+            mse_values.append(err.sum().item())  # Convert to Python number to save memory
 
         mse = sum(mse_values) / (adj_mat.shape[0] * adj_mat.shape[1])
         print("\nMSE value: {}".format(mse))
