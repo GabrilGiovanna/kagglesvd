@@ -33,6 +33,7 @@ def evaluate(rating, hyper_params, kernelized_rr_forward, data, item_propensity,
 
     for i in range(0, hyper_params['num_users'], bsz):
         if hyper_params['model'] == 'ease' or hyper_params['model'] == 'svd-ae':
+            end = min(i+bsz, hyper_params['num_users'])
             #import jax.experimental.sparse as jax_sparse
             #temp_preds = jax_sparse.BCOO.from_scipy_sparse(rating.to_sparse().cpu().coalesce().to_scipy())
             #temp_preds=jax_sparse.BCOO.from_scipy_sparse(rating)
@@ -43,7 +44,7 @@ def evaluate(rating, hyper_params, kernelized_rr_forward, data, item_propensity,
             predicted_rating = temp_preds
         else:
             train_start_time = time.time()
-            temp_preds = kernelized_rr_forward(train_x, eval_context[i:i+bsz].todense(), reg = hyper_params['lamda'])
+            temp_preds = kernelized_rr_forward(train_x, eval_context[i:end].todense(), reg = hyper_params['lamda'])
             #temp_preds_copy = temp_preds.copy()
             temp_train_time = time.time() - train_start_time
             train_time += temp_train_time
@@ -53,11 +54,11 @@ def evaluate(rating, hyper_params, kernelized_rr_forward, data, item_propensity,
             print('To_predict:', to_predict[0])
             print('temp_preds:', temp_preds[0])
         metrics, temp_preds, temp_y = evaluate_batch(
-            data.data['negatives'][i:i+bsz], np.array(temp_preds), 
-            train_positive_list[i:i+bsz], to_predict[i:i+bsz], item_propensity, 
+            data.data['negatives'][i:end], np.array(temp_preds[i:end]), 
+            train_positive_list[i:end], to_predict[i:end], item_propensity, 
             topk, metrics
         )
-        #print(to_predict[i:i+bsz])
+        #print(to_predict[i:end])
         preds += temp_preds
         y_binary += temp_y
 
