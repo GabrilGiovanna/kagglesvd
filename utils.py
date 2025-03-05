@@ -133,7 +133,14 @@ def preprocess_svd(LOAD, dataset, adj_mat, k, path, device):
         print("Calculating eigenvectors and eigenvalues!")
         #ut, s, vt = torch.svd_lowrank(norm_adj, q=k, niter=1, M=None)
         from scipy.sparse.linalg import svds
-        ut, s, vt = svds(norm_adj.cpu().numpy(), k=k)
+
+# Convert PyTorch sparse tensor to SciPy sparse matrix directly
+        norm_adj_sparse = sp.csr_matrix((norm_adj.values().cpu().numpy(),
+                                 norm_adj.indices().cpu().numpy()), 
+                                 shape=norm_adj.shape)
+
+# Compute truncated SVD
+        ut, s, vt = svds(norm_adj_sparse, k=k)
         end = time.time()
         if not os.path.isdir(path):
             os.makedirs(path)
