@@ -3,6 +3,7 @@ import numpy as np
 import jax.numpy as jnp
 from numba import jit, float64
 import time
+from tqdm import tqdm
 
 INF = float(1e6)
 
@@ -31,7 +32,7 @@ def evaluate(rating, hyper_params, kernelized_rr_forward, data, item_propensity,
     
     train_time = 0
 
-    for i in range(0, hyper_params['num_users'], bsz):
+    for i in tqdm(range(0, hyper_params['num_users'], bsz)):
         if hyper_params['model'] == 'ease' or hyper_params['model'] == 'svd-ae':
             end = min(i+bsz, hyper_params['num_users'])
             #import jax.experimental.sparse as jax_sparse
