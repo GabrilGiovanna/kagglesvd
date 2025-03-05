@@ -131,17 +131,7 @@ def preprocess_svd(LOAD, dataset, adj_mat, k, path, device):
     else:
         start = time.time()
         print("Calculating eigenvectors and eigenvalues!")
-        #ut, s, vt = torch.svd_lowrank(norm_adj, q=k, niter=1, M=None)
-        from scipy.sparse.linalg import svds
-
-# Convert PyTorch sparse tensor to SciPy sparse matrix directly
-        norm_adj = norm_adj.coalesce()
-        norm_adj_sparse = sp.csr_matrix((norm_adj.values().cpu().numpy(),
-                                 norm_adj.indices().cpu().numpy()), 
-                                 shape=norm_adj.shape)
-
-# Compute truncated SVD
-        ut, s, vt = svds(norm_adj_sparse, k=k)
+        ut, s, vt = torch.svd_lowrank(norm_adj, q=k, niter=2, M=None)
         end = time.time()
         if not os.path.isdir(path):
             os.makedirs(path)
@@ -149,22 +139,15 @@ def preprocess_svd(LOAD, dataset, adj_mat, k, path, device):
         #np.save(file_list[1], s.cpu().numpy())
         #np.save(file_list[2], vt.cpu().numpy())
         print('Saving eigenvectors and eigenvalues!')
-        np.savez_compressed(file_list[0], ut)
-        np.savez_compressed(file_list[1], ut)
-        np.savez_compressed(file_list[2], ut)
-        #np.savez_compressed(file_list[0], ut.cpu().numpy())
-        #np.savez_compressed(file_list[1], s.cpu().numpy())
-        #np.savez_compressed(file_list[2], vt.cpu().numpy())
+        np.savez_compressed(file_list[0], ut.cpu().numpy())
+        np.savez_compressed(file_list[1], s.cpu().numpy())
+        np.savez_compressed(file_list[2], vt.cpu().numpy())
 
 
     # norm_adj = norm_adj.to_dense()
-    #ut = torch.FloatTensor(ut)
-    ut = torch.FloatTensor(ut.copy())
-
-    #s = torch.FloatTensor(s)
-    s = torch.FloatTensor(s.copy())
-    #vt = torch.FloatTensor(vt)
-    vt = torch.FloatTensor(vt.copy())
+    ut = torch.FloatTensor(ut)
+    s = torch.FloatTensor(s)
+    vt = torch.FloatTensor(vt)
     # end = time.time()
     print('Pre-processing time: ', end - start)
     return adj_mat, norm_adj, ut, s, vt
