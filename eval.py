@@ -50,10 +50,10 @@ def evaluate(rating, hyper_params, kernelized_rr_forward, data, item_propensity,
             temp_train_time = time.time() - train_start_time
             train_time += temp_train_time
             predicted_rating = temp_preds # predicted_rating_score
-        if i == 0:
-            print('Train_positive_list:', train_positive_list[0])
-            print('To_predict:', to_predict[0])
-            print('temp_preds:', temp_preds[0])
+        #if i == 0:
+            #print('Train_positive_list:', train_positive_list[0])
+            #print('To_predict:', to_predict[0])
+            #print('temp_preds:', temp_preds[0])
         metrics, temp_preds, temp_y = evaluate_batch(
             data.data['negatives'][i:end], np.array(temp_preds[i:end]), 
             train_positive_list[i:end], to_predict[i:end], item_propensity, 
