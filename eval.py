@@ -7,6 +7,7 @@ from tqdm import tqdm
 import pandas as pd
 from dataset import SteamRSDataset
 from grouping import FCMWithPCCGrouping
+from aggregation.aggregation import Average
 
 INF = float(1e6)
 
