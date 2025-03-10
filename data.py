@@ -84,7 +84,8 @@ def load_raw_dataset(dataset, data_path = None, index_path = None):
         'item_map': item_map,
         'train':  select(data, index, 0),
         'val': select(data, index, 1),
-        'test': select(data, index, 2)
+        'test': select(data, index, 2),
+        'user_map': user_map
     }
 
     num_users = int(max(data[:, 0]) + 1)

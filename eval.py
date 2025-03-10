@@ -4,6 +4,9 @@ import jax.numpy as jnp
 from numba import jit, float64
 import time
 from tqdm import tqdm
+import pandas as pd
+from dataset import SteamRSDataset
+from grouping import FCMWithPCCGrouping
 
 INF = float(1e6)
 
@@ -31,6 +34,30 @@ def evaluate(rating, hyper_params, kernelized_rr_forward, data, item_propensity,
     # bsz = 20_000 # These many users
     
     train_time = 0
+    u_map = data.data['user_map']
+    rs_dataset = SteamRSDataset()
+    rs_dataset.parse_from_json_gz(
+                rs_dataset.get_data_root_path().joinpath(rs_dataset.code(), 'steam_reviews.json.gz'),
+                items_path=rs_dataset.get_data_root_path().joinpath(rs_dataset.code(),
+                                                                    'steam_games.json.gz'))
+    
+    train,val,test = rs_dataset.train_val_test_split(method='holdout', val_size=0.1, test_size=0.1)
+
+    train.ratings = pd.concat([train.ratings, val.ratings], ignore_index=True)
+
+    groups = FCMWithPCCGrouping(train,group_size = 5,n_clusters = 5)
+
+    aggregation = Average()
+
+    temp_preds = torch.zeros(hyper_params['num_users'], hyper_params['num_items'])
+
+    for user in range(hyper_params['num_users']):
+        user_id = u_map[user]
+        group = groups.get_user_group(user_id)
+        group = [list(u_map.keys())[list(u_map.values()).index(user_group)] for user_group in group]
+        rating_group = rating[group]
+        temp_preds[user] = aggregation.aggregate_pytorch(rating_group)
+
 
     for i in tqdm(range(0, hyper_params['num_users'], bsz)):
         if hyper_params['model'] == 'ease' or hyper_params['model'] == 'svd-ae':
@@ -38,7 +65,6 @@ def evaluate(rating, hyper_params, kernelized_rr_forward, data, item_propensity,
             #import jax.experimental.sparse as jax_sparse
             #temp_preds = jax_sparse.BCOO.from_scipy_sparse(rating.to_sparse().cpu().coalesce().to_scipy())
             #temp_preds=jax_sparse.BCOO.from_scipy_sparse(rating)
-            temp_preds = rating
             #temp_preds = jnp.array(rating)
             #temp_preds = jnp.array(rating.to_dense().cpu())
             #temp_preds_copy = temp_preds.copy()
