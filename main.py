@@ -30,7 +30,7 @@ def train(hyper_params, data):
         adj_mat = data.data['train_matrix'] + data.data['val_matrix']
         PATH = os.getcwd()
         adj_mat, norm_adj, ut, s, vt = preprocess_svd(hyper_params['load'], hyper_params['dataset'], adj_mat, hyper_params['k'], os.path.join(PATH, 'checkpoints'), device)
-        train_model = model.SVD_AE(adj_mat, norm_adj, ut, vt, device)
+        train_model = model.SVD_AE(adj_mat, norm_adj, ut, vt, device = 'cpu')
         
     elif hyper_params['model'] == 'ease':
         adj_mat = data.data['train_matrix']
@@ -72,7 +72,7 @@ def train(hyper_params, data):
 
     if hyper_params['model'] == 'svd-ae':
         print(len(s))
-        s = s.to(device)
+        s = s.to(device = 'cpu')
         rating = train_model(s)
         test_metrics, preds = evaluate(rating, hyper_params, kernelized_rr_forward, data, item_propensity, None, test_set_eval = True)
         
