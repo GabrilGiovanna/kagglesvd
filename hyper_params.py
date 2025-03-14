@@ -17,4 +17,12 @@ hyper_params = {
 	'depth': 1,
 	'grid_search_lamda': args.grid_search,
 	'user_support': -1, #  Number of users to keep (randomly) & -1 implies use all users
+    
+	# Grouping
+	'group_size': 5,
+	'n_clusters': 5,
+	'aggregation': 'Average',
+    'individual': True,
+    'grouping_method': 'FCMWithPCC',
+    'similarity_threshold': 0.5,
 }

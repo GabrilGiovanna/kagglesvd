@@ -117,7 +117,7 @@ def load_raw_dataset(dataset, data_path = None, index_path = None):
     # Negatives will be used for AUC computation
     ret['negatives'] = [ set() for _ in range(num_users) ]
     for u in range(num_users):
-        while len(ret['negatives'][u]) < 50:
+        while len(ret['negatives'][u]) < 100:
             rand_item = np.random.randint(0, num_items)
             if rand_item in ret['train_positive_set'][u]: continue
             if rand_item in ret['test_positive_set'][u]: continue

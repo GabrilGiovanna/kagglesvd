@@ -15,6 +15,7 @@ import jax.experimental.sparse as jax_sparse
 import model
 from parse import parse_args
 from utils import log_end_epoch, get_item_propensity, get_common_path, set_seed, preprocess_svd, preprocess_ease, convert_sp_mat_to_sp_tensor
+from grouping import grouping_factory
 
 args = parse_args()
 
@@ -96,18 +97,35 @@ def train(hyper_params, data):
         adj_mat = torch.tensor(adj_mat.toarray(), dtype=torch.float16)  # No CUDA
         preds = torch.tensor(preds, dtype=torch.float16)  # Ensure preds is a tensor
 
-        # Compute MSE in batches
-        print("Computing MSE in Batches")
-        batch_size = 1000  # Adjust based on available memory
-        mse_values = []
+        groups = grouping_factory(grouping_method = hyper_params['grouping_method'], 
+                                dataset_name= hyper_params['dataset'], 
+                                group_size= hyper_params['group_size'], 
+                                n_clusters= hyper_params['n_clusters'], 
+                                similarity_threshold = hyper_params['similarity_threshold'])
+        
 
-        for i in tqdm(range(0, adj_mat.shape[0], batch_size)):
-            adj_batch = adj_mat[i : i + batch_size]  # No need for `.to_dense()`
-            preds_batch = preds[i : i + batch_size]
+        unique_users = groups.get_unique_users()
+
+        u_map = data.data['user_map']
+        group = [list(u_map.keys())[list(u_map.values()).index(user_group)] for user_group in unique_users]
+
+        #Adj mat with only unique users
+        adj_mat = adj_mat[group]
+        # Compute MSE in batches
+        print("Computing MSE")
+        mse_values = []
+        for i, user in tqdm(enumerate(group)):
+            test_indices = torch.tensor(list(data.data['test_positive_set'][user]), dtype=torch.long)
+            neg_indices = torch.tensor(list(data.data['negatives'][user]), dtype=torch.long)
+            preds_batch = preds[i * 101 : i * 101 + 101]
+            mask = torch.zeros(adj_mat.shape[1], dtype=torch.bool)
+            mask[test_indices.tolist()+neg_indices.tolist()] = True
+            adj_batch = adj_mat[i,mask]
+
             err = (preds_batch - adj_batch) ** 2
             mse_values.append(err.sum().item())  # Convert to Python number to save memory
 
-        mse = sum(mse_values) / (adj_mat.shape[0] * adj_mat.shape[1])
+        mse = sum(mse_values) / (adj_mat.shape[0] * 101)
         print("\nMSE value: {}".format(mse))
 
 
@@ -185,9 +203,25 @@ def main(hyper_params, gpu_id = None):
 
 if __name__ == "__main__":
     from grouping import FCMWithPCCGrouping
-    from dataset import SteamRSDataset
+    from dataset import SteamRSDataset, MovieLensRSDataset, dataset_factory, ML1m
     from hyper_params import hyper_params
     set_seed(hyper_params['seed'])
     GPU = torch.cuda.is_available()
     device = torch.device('cuda:0' if GPU else 'cpu')
+
+    # Ml-latest-small dataset
+    hyper_params['dataset'] = 'ml-1m'
+
+
+    hyper_params['k'] = 147
+
+    hyper_params['individual'] = False
+    print(hyper_params)
+
+    #train_ds, val_ds, test_ds = dataset_factory(ML1m.code())
+
+    #convert
+
+    #ML1m.datasetconversion(train_ds, val_ds, test_ds)
+
     main(hyper_params)
