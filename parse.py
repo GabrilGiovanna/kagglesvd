@@ -9,5 +9,11 @@ def parse_args():
     parser.add_argument('--seed', type=int, default=42)
     parser.add_argument('--lamda', type=float, default=1.0)
     parser.add_argument('--grid_search', type=int, default=0)
+    parser.add_argument('--group_size', type=int, default=5)
+    parser.add_argument('--n_clusters', type=int, default=5)
+    parser.add_argument('--aggregation', type=str, default='Average')
+    parser.add_argument('--individual', type=bool, default=True)
+    parser.add_argument('--grouping_method', type=str, default='FCMWithPCC')
+    parser.add_argument('--similarity_threshold', type=float, default=0.5)
 
     return parser.parse_args()

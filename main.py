@@ -203,25 +203,24 @@ def main(hyper_params, gpu_id = None):
 
 if __name__ == "__main__":
     from grouping import FCMWithPCCGrouping
-    from dataset import SteamRSDataset, MovieLensRSDataset, dataset_factory, ML1m
+    from dataset import SteamRSDataset, MovieLensRSDataset, dataset_factory, ML1m, MINDRSDataset
     from hyper_params import hyper_params
     set_seed(hyper_params['seed'])
     GPU = torch.cuda.is_available()
     device = torch.device('cuda:0' if GPU else 'cpu')
 
     # Ml-latest-small dataset
-    hyper_params['dataset'] = 'ml-1m'
+    #hyper_params['dataset'] = 'ml-1m'
+    #hyper_params['dataset'] = 'steam'
 
 
-    hyper_params['k'] = 147
+    #hyper_params['k'] = 147
 
-    hyper_params['individual'] = False
-    print(hyper_params)
+    #hyper_params['individual'] = True
+    #print(hyper_params)
 
-    #train_ds, val_ds, test_ds = dataset_factory(ML1m.code())
+    #train_ds, val_ds, test_ds = dataset_factory(MINDRSDataset.code())
 
-    #convert
-
-    #ML1m.datasetconversion(train_ds, val_ds, test_ds)
+    #MINDRSDataset.datasetconversion(train_ds, val_ds, test_ds)
 
     main(hyper_params)

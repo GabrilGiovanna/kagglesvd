@@ -13,6 +13,12 @@ def get_common_path(hyper_params):
     )
     if hyper_params['model'] == 'svd-ae':
         ret += "k_{}_".format(hyper_params['k'])
+        #add hyper_params aggregation, individual, grouping_method, similarity_threshold
+        ret += "group_size_{}_n_clusters_{}_aggregation_{}_individual_{}_grouping_method_{}_similarity_threshold_{}".format(hyper_params['group_size'], hyper_params['n_clusters'],
+                                                                                                                             hyper_params['aggregation'], 
+                                                                                                                             hyper_params['individual'],
+                                                                                                                               hyper_params['grouping_method'], 
+                                                                                                                               hyper_params['similarity_threshold'])
     else:
         if hyper_params['grid_search_lamda']:
             ret += "grid_search_lamda_"

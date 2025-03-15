@@ -8,6 +8,7 @@ import pandas as pd
 from dataset import SteamRSDataset, MovieLensRSDataset, dataset_factory
 from grouping import FCMWithPCCGrouping , grouping_factory
 from aggregation.aggregation import Average, BordaCount
+from aggregation import aggregation_factory
 
 INF = float(1e6)
 
@@ -54,7 +55,7 @@ def evaluate(rating, hyper_params, kernelized_rr_forward, data, item_propensity,
                             n_clusters= hyper_params['n_clusters'],similarity_threshold = hyper_params['similarity_threshold'])
 
     #aggregation = Average()
-    aggregation = BordaCount()
+    aggregation = aggregation_factory(hyper_params['aggregation'])
 
     temp_preds = torch.zeros(hyper_params['num_users'], hyper_params['num_items'])
 
