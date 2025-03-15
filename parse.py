@@ -1,5 +1,14 @@
 import argparse
 
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ('yes', 'true', 't', '1'):
+        return True
+    if v.lower() in ('no', 'false', 'f', '0'):
+        return False
+    raise argparse.ArgumentTypeError('Boolean value expected.')
+
 def parse_args():
     parser = argparse.ArgumentParser(description="")
     parser.add_argument('--model', type=str, default='svd-ae', help='rec-model, support [svd-ae, ease, inf-ae]')
@@ -12,7 +21,7 @@ def parse_args():
     parser.add_argument('--group_size', type=int, default=5)
     parser.add_argument('--n_clusters', type=int, default=5)
     parser.add_argument('--aggregation', type=str, default='Average')
-    parser.add_argument('--individual', type=bool, default=True)
+    parser.add_argument('--individual', type=str2bool, nargs='?', const=True, default=True)
     parser.add_argument('--grouping_method', type=str, default='FCMWithPCC')
     parser.add_argument('--similarity_threshold', type=float, default=0.5)
 
