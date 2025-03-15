@@ -115,6 +115,9 @@ def train(hyper_params, data):
         print("Computing MSE")
         mse_values = []
         for i, user in tqdm(enumerate(group)):
+            #if user is float, convert it to int
+            if isinstance(user, float):
+                user = int(user)
             test_indices = torch.tensor(list(data.data['test_positive_set'][user]), dtype=torch.long)
             neg_indices = torch.tensor(list(data.data['negatives'][user]), dtype=torch.long)
             preds_batch = preds[i * 101 : i * 101 + 101]
@@ -210,17 +213,18 @@ if __name__ == "__main__":
     device = torch.device('cuda:0' if GPU else 'cpu')
 
     # Ml-latest-small dataset
+    #hyper_params['dataset'] = 'ml-latest-small'
     #hyper_params['dataset'] = 'ml-1m'
     #hyper_params['dataset'] = 'steam'
+    #hyper_params['dataset'] = 'MIND'
 
+    #hyper_params['k'] = 65
 
-    #hyper_params['k'] = 147
+    #hyper_params['individual'] = False
+    print(hyper_params)
 
-    #hyper_params['individual'] = True
-    #print(hyper_params)
+    #train_ds, val_ds, test_ds = dataset_factory(MovieLensRSDataset.code())
 
-    #train_ds, val_ds, test_ds = dataset_factory(MINDRSDataset.code())
-
-    #MINDRSDataset.datasetconversion(train_ds, val_ds, test_ds)
+    #MovieLensRSDataset.datasetconversion(train_ds, val_ds, test_ds)
 
     main(hyper_params)

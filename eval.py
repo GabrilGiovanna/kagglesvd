@@ -76,6 +76,10 @@ def evaluate(rating, hyper_params, kernelized_rr_forward, data, item_propensity,
    
     temp_preds = temp_preds[unique_users_map]
 
+    #if unique_users_map is list of float, convert it to list of int
+    if isinstance(unique_users_map[0], float):
+        unique_users_map = [int(u) for u in unique_users_map]
+
     #get train_positive_list and to_predict for list_of_group_users
     train_positive_list = [train_positive_list[u] for u in unique_users_map]
     to_predict = [to_predict[u] for u in unique_users_map]
