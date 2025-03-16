@@ -4,6 +4,7 @@ import numpy as np
 import copy
 import h5py
 import gc
+import pandas as pd
 
 class Dataset:
     def __init__(self, hyper_params):
@@ -47,6 +48,11 @@ def load_raw_dataset(dataset, data_path = None, index_path = None):
             "data/{}/index.npz".format(dataset)
         ]
 
+    #path for user_mapping.csv
+    user_mapping_path = "data/{}/user_mapping.csv".format(dataset)
+
+    #get user_mapping
+    user_mapping = pd.read_csv(user_mapping_path)
     with h5py.File(data_path, 'r') as f: data = np.array(list(zip(f['user'][:], f['item'][:], f['rating'][:])))
     index = np.array(np.load(index_path)['data'], dtype = np.int32)
 
@@ -55,6 +61,8 @@ def load_raw_dataset(dataset, data_path = None, index_path = None):
         valid_users, valid_items = set(), set()
         for at, (u, i, r) in enumerate(data):
             if index[at] != -1:
+                if isinstance(u,bytes): u = u.decode('utf-8')
+                if isinstance(i,bytes): i = i.decode('utf-8')
                 valid_users.add(u)
                 valid_items.add(i)
 
@@ -85,7 +93,8 @@ def load_raw_dataset(dataset, data_path = None, index_path = None):
         'train':  select(data, index, 0),
         'val': select(data, index, 1),
         'test': select(data, index, 2),
-        'user_map': user_map
+        'user_map': user_map,
+        'user_mapping': user_mapping
     }
 
     num_users = int(max(data[:, 0]) + 1)

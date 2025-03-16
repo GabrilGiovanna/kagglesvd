@@ -218,13 +218,13 @@ if __name__ == "__main__":
     #hyper_params['dataset'] = 'steam'
     #hyper_params['dataset'] = 'MIND'
 
-    #hyper_params['k'] = 65
+    #hyper_params['k'] = 5
 
     #hyper_params['individual'] = False
     print(hyper_params)
 
-    #train_ds, val_ds, test_ds = dataset_factory(MovieLensRSDataset.code())
+    #train_ds, val_ds, test_ds = dataset_factory(SteamRSDataset.code())
 
-    #MovieLensRSDataset.datasetconversion(train_ds, val_ds, test_ds)
+    #SteamRSDataset.datasetconversion(train_ds, val_ds, test_ds)
 
     main(hyper_params)

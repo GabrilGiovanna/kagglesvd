@@ -61,6 +61,9 @@ def evaluate(rating, hyper_params, kernelized_rr_forward, data, item_propensity,
 
     unique_users = groups.get_unique_users()
 
+    user_mapping = data.data['user_mapping']
+
+    
     unique_users_map = [list(u_map.keys())[list(u_map.values()).index(user_group)] for user_group in unique_users]
 
     
