@@ -21,7 +21,6 @@ hyper_params = {
 	# Grouping
 	'group_size': args.group_size,
 	'n_clusters': args.n_clusters,
-	'n_clusters': args.n_clusters,
 	'aggregation': args.aggregation,
     'individual': args.individual,
     'grouping_method': args.grouping_method,
