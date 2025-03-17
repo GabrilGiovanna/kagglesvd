@@ -78,6 +78,8 @@ def load_raw_dataset(dataset, data_path = None, index_path = None):
     new_data, new_index = [], []
     for at, (u, i, r) in enumerate(data):
         if index[at] == -1: continue
+        if isinstance(u,bytes): u = u.decode('utf-8')
+        if isinstance(i,bytes): i = i.decode('utf-8')
         new_data.append([ user_map[u], item_map[i], r ])
         new_index.append(index[at])
     data = np.array(new_data, dtype = np.int32)
