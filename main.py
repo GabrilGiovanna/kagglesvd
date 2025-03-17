@@ -107,7 +107,7 @@ def train(hyper_params, data):
         unique_users = groups.get_unique_users()
 
         u_map = data.data['user_map']
-        group = [list(u_map.keys())[list(u_map.values()).index(user_group)] for user_group in unique_users]
+        group = [u_map[user_group] for user_group in unique_users]
 
         #Adj mat with only unique users
         adj_mat = adj_mat[group]
@@ -207,7 +207,10 @@ def main(hyper_params, gpu_id = None):
 if __name__ == "__main__":
     from grouping import FCMWithPCCGrouping
     from dataset import SteamRSDataset, MovieLensRSDataset, dataset_factory, ML1m, MINDRSDataset
+    from aggregation.aggregation import Average, BordaCount
+    from aggregation import aggregation_factory
     from hyper_params import hyper_params
+    from data import Dataset
     set_seed(hyper_params['seed'])
     GPU = torch.cuda.is_available()
     device = torch.device('cuda:0' if GPU else 'cpu')
@@ -219,6 +222,12 @@ if __name__ == "__main__":
     #hyper_params['dataset'] = 'MIND'
 
     #hyper_params['k'] = 5
+
+    #clusters
+    #hyper_params['n_clusters'] = 10
+
+    #group size
+    #hyper_params['group_size'] = 50
 
     #hyper_params['individual'] = False
     print(hyper_params)

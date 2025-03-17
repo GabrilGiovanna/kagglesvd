@@ -64,14 +64,14 @@ def evaluate(rating, hyper_params, kernelized_rr_forward, data, item_propensity,
     user_mapping = data.data['user_mapping']
 
     
-    unique_users_map = [list(u_map.keys())[list(u_map.values()).index(user_group)] for user_group in unique_users]
+    unique_users_map = [u_map[user_group] for user_group in unique_users]
 
     
     if hyper_params['individual']== False:
         for user in range(hyper_params['num_users']):
-            user_id = u_map[user]
+            user_id = list(u_map.keys())[list(u_map.values()).index(user)]
             group = groups.get_user_group(user_id)
-            group = [list(u_map.keys())[list(u_map.values()).index(user_group)] for user_group in group]
+            group = [u_map[user_group] for user_group in unique_users]
             rating_group = rating[group]
             temp_preds[user] = aggregation.aggregate_pytorch(rating_group)
     
