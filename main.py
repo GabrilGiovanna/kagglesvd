@@ -216,21 +216,21 @@ if __name__ == "__main__":
     device = torch.device('cuda:0' if GPU else 'cpu')
 
     # Ml-latest-small dataset
-    hyper_params['dataset'] = 'ml-latest-small'
+    #hyper_params['dataset'] = 'ml-latest-small'
     #hyper_params['dataset'] = 'ml-1m'
     #hyper_params['dataset'] = 'steam'
     #hyper_params['dataset'] = 'MIND'
 
-    hyper_params['k'] = 65
+    #hyper_params['k'] = 65
 
     #clusters
-    hyper_params['n_clusters'] = 10
+    #hyper_params['n_clusters'] = 10
 
     #group size
-    hyper_params['group_size'] = 10
+    #hyper_params['group_size'] = 10
 
-    hyper_params['individual'] = False
-    print(hyper_params)
+    #hyper_params['individual'] = False
+    #print(hyper_params)
 
     #train_ds, val_ds, test_ds = dataset_factory(SteamRSDataset.code())
 
