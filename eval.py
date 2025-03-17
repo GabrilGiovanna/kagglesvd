@@ -68,7 +68,7 @@ def evaluate(rating, hyper_params, kernelized_rr_forward, data, item_propensity,
 
     
     if hyper_params['individual']== False:
-        for user in range(hyper_params['num_users']):
+        for user in tqdm(range(hyper_params['num_users'])):
             user_id = list(u_map.keys())[list(u_map.values()).index(user)]
             group = groups.get_user_group(user_id)
             group = [u_map[user_group] for user_group in unique_users]
