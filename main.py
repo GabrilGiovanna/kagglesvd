@@ -190,8 +190,8 @@ if __name__ == "__main__":
     hyper_params['k'] = 148
     #print(hyper_params)
 
-    #test_eval(hyper_params)
+    test_eval(hyper_params)
     #train_ds, val_ds, test_ds = dataset_factory(SteamRSDataset.code())
 
     #SteamRSDataset.datasetconversion(train_ds, val_ds, test_ds)
-    main(hyper_params)
+    #main(hyper_params)
