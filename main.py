@@ -50,18 +50,20 @@ def evaluate_model(hyper_params, data, train_model, s, kernelized_rr_forward):
     # Iterate through different cluster and group sizes
     #clusters = [5,10,20]
     #group_sizes = [5,10,20]
-    clusters = [10,20]
-    group_sizes = [50,100,200,500]
+    SIMILARITY_THRESHOLDS = [0.7, 0.8, 0.9]
+    group_sizes = [5, 10, 20, 50]
+    #clusters = [10,20]
+    #group_sizes = [50,100,200,500]
     # Convert model output tensor
     s = s.to(device='cpu')
     rating = train_model(s)
 
-    for n_clusters in clusters:
+    for similarity in SIMILARITY_THRESHOLDS:
         for group_size in group_sizes:
-            print(f"\nEvaluating with n_clusters={n_clusters}, group_size={group_size}")
+            print(f"\nEvaluating with n_clusters={similarity}, group_size={group_size}")
 
             # Update clustering/grouping hyperparameters
-            hyper_params['n_clusters'] = n_clusters
+            hyper_params['similarity_threshold'] = similarity
             hyper_params['group_size'] = group_size
 
             # Define base log filename
@@ -92,7 +94,7 @@ def evaluate_model(hyper_params, data, train_model, s, kernelized_rr_forward):
             test_metrics, preds = evaluate(rating, hyper_params, kernelized_rr_forward, data, item_propensity, None, test_set_eval=True)
             log_end_epoch(hyper_params, test_metrics, 0, 0)
 
-            print(f"Finished evaluations for n_clusters={n_clusters}, group_size={group_size}\n")
+            print(f"Finished evaluations for n_clusters={similarity}, group_size={group_size}\n")
 
 
 def top_pop(hyper_params, data, topk=10):
@@ -185,8 +187,7 @@ if __name__ == "__main__":
     #hyper_params['similarity_threshold'] = 0.7
     #hyper_params['group_size'] = 50
 
-    #hyper_params['k'] = 148
-
+    hyper_params['k'] = 148
     #print(hyper_params)
 
     #test_eval(hyper_params)
