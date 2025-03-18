@@ -184,8 +184,8 @@ if __name__ == "__main__":
     #hyper_params['grouping_method'] = 'FCMWithPCC'
     #hyper_params['aggregation'] = 'Average'
     #hyper_params['individual'] = False
-    #hyper_params['similarity_threshold'] = 0.7
-    #hyper_params['group_size'] = 50
+    hyper_params['similarity_threshold'] = 0.9
+    #hyper_params['group_size'] = 10
 
     hyper_params['k'] = 148
     #print(hyper_params)
