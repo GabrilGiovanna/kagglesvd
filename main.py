@@ -48,7 +48,9 @@ def evaluate_model(hyper_params, data, train_model, s, kernelized_rr_forward):
     item_propensity = get_item_propensity(hyper_params, data)
 
     # Iterate through different cluster and group sizes
-    clusters = [10,20,50,100]
+    #clusters = [5,10,20]
+    #group_sizes = [5,10,20]
+    clusters = [10,20]
     group_sizes = [50,100,200,500]
     # Convert model output tensor
     s = s.to(device='cpu')
@@ -93,6 +95,20 @@ def evaluate_model(hyper_params, data, train_model, s, kernelized_rr_forward):
             print(f"Finished evaluations for n_clusters={n_clusters}, group_size={group_size}\n")
 
 
+def top_pop(hyper_params, data, topk=10):
+    item_count = np.zeros(hyper_params['num_items'])
+    
+    # Get the top popular items
+    for u, i, r in data.data['train']:
+        item_count[i] += 1
+
+    top_items = np.argsort(item_count)[::-1][:topk]
+    return top_items
+
+def evaluate_top_pop(hyper_params, data, topk=10):
+    top_items = top_pop(hyper_params, data, topk)
+
+    
 
 
 
@@ -118,6 +134,34 @@ def main(hyper_params, gpu_id=None):
     evaluate_model(hyper_params, data, train_model, s, kernelized_rr_forward)
 
 
+def test_eval(hyper_params):
+    gpu_id = None
+    if gpu_id is not None:
+        os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_id)
+
+    from jax import config
+    if 'float64' in hyper_params and hyper_params['float64']:
+        config.update('jax_enable_x64', True)
+
+    from data import Dataset
+
+    os.makedirs("./results/logs/", exist_ok=True)
+    data = Dataset(hyper_params)
+    hyper_params = copy.deepcopy(data.hyper_params)  # Updated w/ data-stats
+
+    # Train model once
+    train_model, s, kernelized_rr_forward = train(hyper_params, data)
+
+    s = s.to(device='cpu')
+    rating = train_model(s)
+
+    item_propensity = get_item_propensity(hyper_params, data)
+
+    hyper_params['log_file'] = f"./results/logs/{get_common_path(hyper_params)}.txt"
+
+    test_metrics, preds = evaluate(rating, hyper_params, kernelized_rr_forward, data, item_propensity, None, test_set_eval=True)
+    log_end_epoch(hyper_params, test_metrics, 0, 0)
+
 if __name__ == "__main__":
     from grouping import FCMWithPCCGrouping
     from dataset import SteamRSDataset, MovieLensRSDataset, dataset_factory, ML1m, MINDRSDataset
@@ -134,12 +178,18 @@ if __name__ == "__main__":
     #hyper_params['dataset'] = 'ml-1m'
     #hyper_params['dataset'] = 'steam'
     #hyper_params['dataset'] = 'MIND'
+    #hyper_params['grouping_method'] = 'ContentBasedPCC'
+    #hyper_params['grouping_method'] = 'FCMWithPCC'
+    #hyper_params['aggregation'] = 'Average'
+    #hyper_params['individual'] = False
+    #hyper_params['similarity_threshold'] = 0.7
+    #hyper_params['group_size'] = 50
 
     #hyper_params['k'] = 148
 
     #print(hyper_params)
 
-
+    #test_eval(hyper_params)
     #train_ds, val_ds, test_ds = dataset_factory(SteamRSDataset.code())
 
     #SteamRSDataset.datasetconversion(train_ds, val_ds, test_ds)

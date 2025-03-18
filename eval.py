@@ -14,7 +14,7 @@ INF = float(1e6)
 
 def evaluate(rating, hyper_params, kernelized_rr_forward, data, item_propensity, train_x, topk = [1, 5, 10, 20, 50, 100 ], test_set_eval = False):
     preds, y_binary, metrics = [], [], {}
-    for kind in [ 'HR', 'NDCG', 'PSP', 'RECALL', 'PRECISION' ]: # [ 'HR', 'NDCG', 'PSP' ]:
+    for kind in [ 'HR', 'NDCG', 'PSP', 'RECALL', 'PRECISION', 'MRR' ]: # [ 'HR', 'NDCG', 'PSP' ]:
         for k in topk: 
             metrics['{}@{}'.format(kind, k)] = 0.0
     # Train positive set -- these items will be set to -infinity while prediction on the val/test set
@@ -65,7 +65,6 @@ def evaluate(rating, hyper_params, kernelized_rr_forward, data, item_propensity,
 
     
     unique_users_map = [u_map[user_group] for user_group in unique_users]
-
     
     if hyper_params['individual']== False:
         for user in tqdm(unique_users_map):
@@ -143,7 +142,7 @@ def evaluate(rating, hyper_params, kernelized_rr_forward, data, item_propensity,
     if (True not in np.isnan(y_binary)) and (True not in np.isnan(preds)):
         metrics['AUC'] = round(fast_auc(y_binary, preds), 4)
     
-    for kind in [ 'HR', 'NDCG', 'PSP', 'RECALL', 'PRECISION' ]: # [ 'HR', 'NDCG', 'PSP' ]:
+    for kind in [ 'HR', 'NDCG', 'PSP', 'RECALL', 'PRECISION', 'MRR' ]: # [ 'HR', 'NDCG', 'PSP' ]:
         for k in topk: 
             metrics['{}@{}'.format(kind, k)] = round(
                 float(100.0 * metrics['{}@{}'.format(kind, k)]) / len(unique_users), 4
@@ -193,10 +192,18 @@ def evaluate_batch(auc_negatives, logits, train_positive, test_positive_set, ite
             
             top_k_set = set(indices[b, :k].tolist())
             test_set = set(test_positive_set[b])
+
+            first_relevant = next((i for i, x in enumerate(indices[b, :k]) if x.item() in test_set), None)
             
             metrics[f'HR@{k}'] += len(top_k_set & test_set) / float(min(num_pos, k))
             metrics[f'RECALL@{k}'] += len(top_k_set & test_set) / float(num_pos)
             metrics[f'PRECISION@{k}'] += len(top_k_set & test_set) / float(k)
+
+            if first_relevant is not None:
+                metrics[f'MRR@{k}'] += 1.0 / (first_relevant + 1.0)
+            
+            else:
+                metrics[f'MRR@{k}'] += 0.0
             
             test_positive_sorted_psp = sorted([item_propensity[x] for x in test_positive_set[b]], reverse=True)
             
