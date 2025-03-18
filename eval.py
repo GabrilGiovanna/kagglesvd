@@ -72,8 +72,15 @@ def evaluate(rating, hyper_params, kernelized_rr_forward, data, item_propensity,
             user_id = list(u_map.keys())[list(u_map.values()).index(user)]
             group = groups.get_user_group(user_id)
             group = [u_map[user_group] for user_group in unique_users]
-            rating_group = rating[group]
-            temp_preds[user] = aggregation.aggregate_pytorch(rating_group)
+            if hyper_params['aggregation'] == 'BordaCount':
+                test_indices = list(data.data['test_positive_set'][user])
+                neg_indices = data.data['negatives'][user].tolist()
+                rating_group = rating[group]
+                rating_group = rating_group[:,test_indices+neg_indices]
+                temp_preds[user,test_indices+neg_indices] = aggregation.aggregate_pytorch(rating_group).to(torch.float)
+            else:
+                rating_group = rating[group]
+                temp_preds[user] = aggregation.aggregate_pytorch(rating_group)
     
     #get unique users in list_of_group_users and get temp_preds only for those users
    
@@ -89,7 +96,7 @@ def evaluate(rating, hyper_params, kernelized_rr_forward, data, item_propensity,
 
     
     metrics, temp_preds, temp_y = evaluate_batch(
-        data.data['negatives'], np.array(temp_preds), 
+        data.data['negatives'][unique_users_map], np.array(temp_preds), 
         train_positive_list, to_predict, item_propensity, 
         topk, metrics
     )

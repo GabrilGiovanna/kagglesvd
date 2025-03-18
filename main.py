@@ -16,6 +16,9 @@ import model
 from parse import parse_args
 from utils import log_end_epoch, get_item_propensity, get_common_path, set_seed, preprocess_svd, preprocess_ease, convert_sp_mat_to_sp_tensor
 from grouping import grouping_factory
+from eval import evaluate
+from aggregation.aggregation import Average, BordaCount
+import torch
 
 args = parse_args()
 
@@ -45,8 +48,8 @@ def evaluate_model(hyper_params, data, train_model, s, kernelized_rr_forward):
     item_propensity = get_item_propensity(hyper_params, data)
 
     # Iterate through different cluster and group sizes
-    clusters = [10,20,50,100]
-    group_sizes = [50,100,200,500]
+    clusters = [5,10,20]
+    group_sizes = [5,10,20]
     # Convert model output tensor
     s = s.to(device='cpu')
     rating = train_model(s)
@@ -110,6 +113,7 @@ def main(hyper_params, gpu_id=None):
     # Train model once
     train_model, s, kernelized_rr_forward = train(hyper_params, data)
 
+
     # Evaluate multiple times with different settings
     evaluate_model(hyper_params, data, train_model, s, kernelized_rr_forward)
 
@@ -131,7 +135,7 @@ if __name__ == "__main__":
     #hyper_params['dataset'] = 'steam'
     #hyper_params['dataset'] = 'MIND'
 
-    #hyper_params['k'] = 65
+    #hyper_params['k'] = 148
 
     #print(hyper_params)
 
@@ -139,5 +143,4 @@ if __name__ == "__main__":
     #train_ds, val_ds, test_ds = dataset_factory(SteamRSDataset.code())
 
     #SteamRSDataset.datasetconversion(train_ds, val_ds, test_ds)
-
     main(hyper_params)
