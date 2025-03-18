@@ -48,8 +48,8 @@ def evaluate_model(hyper_params, data, train_model, s, kernelized_rr_forward):
     item_propensity = get_item_propensity(hyper_params, data)
 
     # Iterate through different cluster and group sizes
-    clusters = [5,10,20]
-    group_sizes = [5,10,20]
+    clusters = [10,20,50,100]
+    group_sizes = [50,100,200,500]
     # Convert model output tensor
     s = s.to(device='cpu')
     rating = train_model(s)
