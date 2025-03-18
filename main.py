@@ -50,7 +50,7 @@ def evaluate_model(hyper_params, data, train_model, s, kernelized_rr_forward):
     # Iterate through different cluster and group sizes
     #clusters = [5,10,20]
     #group_sizes = [5,10,20]
-    SIMILARITY_THRESHOLDS = [0.7, 0.8, 0.9]
+    SIMILARITY_THRESHOLDS = [0.9]
     group_sizes = [5, 10, 20, 50]
     #clusters = [10,20]
     #group_sizes = [50,100,200,500]
