@@ -1,5 +1,4 @@
 import functools
-from neural_tangents import stax
 import torch
 from torch import nn
 import numpy as np
