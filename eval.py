@@ -69,8 +69,8 @@ def evaluate(rating, hyper_params, data, item_propensity, train_x, topk = [1, 5,
     if hyper_params['individual']== False:
         for user in tqdm(unique_users_map):
 
-            t0 = torch.randn(2, 2, device=xm.xla_device())
-            t1 = torch.randn(2, 2, device=xm.xla_device())
+            t0 = torch.randn(10, 10, device=xm.xla_device())
+            t1 = torch.randn(10, 10, device=xm.xla_device())
             t2 = t0 + t1
 
             user_id = list(u_map.keys())[list(u_map.values()).index(user)]
