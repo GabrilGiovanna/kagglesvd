@@ -65,15 +65,16 @@ def evaluate(rating, hyper_params, data, item_propensity, train_x, topk = [1, 5,
     
     unique_users_map = [u_map[user_group] for user_group in unique_users]
 
+    #user_id = list(u_map.keys())[list(u_map.values()).index(user)]
     
     if hyper_params['individual']== False:
-        for user in tqdm(unique_users_map):
+        for i, user in tqdm(enumerate(unique_users_map)):
 
             t0 = torch.randn(10, 10, device=xm.xla_device())
             t1 = torch.randn(10, 10, device=xm.xla_device())
             t2 = t0 + t1
 
-            user_id = list(u_map.keys())[list(u_map.values()).index(user)]
+            user_id = unique_users[i]
             group = groups.get_user_group(user_id)
             group = [u_map[user_group] for user_group in unique_users]
             if hyper_params['aggregation'] == 'BordaCount':
