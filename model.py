@@ -24,7 +24,7 @@ class EASE(nn.Module):
 
 
 class SVD_AE(nn.Module):
-    def __init__(self, adj_mat, norm_adj, user_sv, item_sv, device='cuda:0', batch_size=10000):
+    def __init__(self, adj_mat, norm_adj, user_sv, item_sv, device='cuda:0', batch_size=8000):
         super(SVD_AE, self).__init__()
         self.device = device
         self.adj_mat = adj_mat
