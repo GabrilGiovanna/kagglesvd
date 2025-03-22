@@ -26,10 +26,10 @@ class EASE(nn.Module):
 class SVD_AE(nn.Module):
     def __init__(self, adj_mat, norm_adj, user_sv, item_sv, device='cuda:0', batch_size=10000):
         super(SVD_AE, self).__init__()
-        self.adj_mat = adj_mat.to_dense().to(device)
-        self.norm_adj = norm_adj.to_dense().to(device)
-        self.user_sv = user_sv.to_dense().to(device)  # (M, K)
-        self.item_sv = item_sv.to_dense().to(device)  # (N, K)
+        self.adj_mat = adj_mat
+        self.norm_adj = norm_adj
+        self.user_sv = user_sv  # (M, K)
+        self.item_sv = item_sv  # (N, K)
         self.device = device
         self.batch_size = batch_size
 
@@ -89,7 +89,7 @@ class SVD_AE(nn.Module):
             batch_item_sv = self.item_sv[start_item_sv:end_item_sv, :]  # (batch_size, K)
 
             # Compute batch-wise interaction
-            batch_ratings = torch.mm(batch_item_sv, scaled_user_sv) # (batch_size, user_size)
+            batch_ratings = torch.mm(batch_item_sv, scaled_user_sv).to(self.device) # (batch_size, user_size)
 
             for start_adj_mat in range(0, self.adj_mat.shape[1], self.batch_size):
                 print(f"Step 1: start_adj_mat{start_adj_mat}\n")
@@ -98,12 +98,12 @@ class SVD_AE(nn.Module):
                 adj_mat_batch = self.__slice_sparse_columns(self.adj_mat, range(start_adj_mat, end_adj_mat))
 
                 # Apply adjacency matrices
-                batch_ratings_adj = torch.mm(batch_ratings, adj_mat_batch.to_dense())
+                batch_ratings_adj = torch.mm(batch_ratings, adj_mat_batch.to_dense().to(self.device))
                 for start_norm_adj in range(0, self.norm_adj.shape[0], self.batch_size):
                     print(f"Step 2: start_norm_adj{start_norm_adj}\n")
                     end_norm_adj = min(start_norm_adj + self.batch_size, num_users)
                     norm_adj_batch = self.__slice_sparse_rows(self.norm_adj, range(start_norm_adj, end_norm_adj))
-                    rating[start_norm_adj:end_norm_adj, start_adj_mat:end_adj_mat] += norm_adj_batch.to_dense()[:, start_item_sv:end_item_sv] @ batch_ratings_adj
+                    rating[start_norm_adj:end_norm_adj, start_adj_mat:end_adj_mat] += norm_adj_batch.to_dense()[:, start_item_sv:end_item_sv].to(self.device) @ batch_ratings_adj
 
         return rating
 
