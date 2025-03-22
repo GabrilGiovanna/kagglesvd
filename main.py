@@ -16,6 +16,7 @@ from grouping import grouping_factory
 from eval import evaluate
 from aggregation.aggregation import Average, BordaCount
 import torch
+from grouping import ContentBasedPCC, FCMWithPCCGrouping, KNN
 #import torch_xla
 #import torch_xla.core.xla_model as xm
 
@@ -50,23 +51,42 @@ def evaluate_model(hyper_params, data, train_model, s):
     item_propensity = get_item_propensity(hyper_params, data)
 
     # Iterate through different cluster and group sizes
-    #clusters = [5,10,20]
-    #group_sizes = [5,10]
-    SIMILARITY_THRESHOLDS = [0.8, 0.9]
-    group_sizes = [5, 10, 20]
-    #clusters = [10,20]
-    #group_sizes = [50,100,200,500]
+
+    #Values for ContentBasedPCC
+
+    SIMILARITY_THRESHOLDS_CB = [0.75, 0.8, 0.85, 0.9]
+
+    GROUP_SIZES_CB = [3, 5, 10, 15]
+
+    #Values for FCMWithPCC
+
+    if hyper_params['dataset'] == 'ml-1m' or hyper_params['dataset'] == 'ml-latest-small':
+        GROUP_SIZES_FCM = [5, 10, 20, 30, 40]
+    else:
+        GROUP_SIZES_FCM = [50, 100, 200, 300, 500]
+    
+    N_CLUSTERS_FCM = [5, 10, 20, 30]
+
+
+    #Values for KNN
+
+    SIMILARITY_THRESHOLDS_KNN = [1.0, 1.2, 1.4, 1.6]
+
+    GROUP_SIZES_KNN = [3, 5, 10, 15]
+
     # Convert model output tensor
     #s = s.to(device='cpu')
     s = s.to(device)
     rating = train_model(s)
 
-    for similarity in SIMILARITY_THRESHOLDS:
-        for group_size in group_sizes:
-            print(f"\nEvaluating with similarity={similarity}, group_size={group_size}")
+    hyper_params['grouping_method'] = 'FCMWithPCC'
+
+    for cluster in N_CLUSTERS_FCM:
+        for group_size in GROUP_SIZES_FCM:
+            print(f"\nEvaluating with cluster={cluster}, group_size={group_size}")
 
             # Update clustering/grouping hyperparameters
-            hyper_params['similarity_threshold'] = similarity
+            hyper_params['n_clusters'] = cluster
             hyper_params['group_size'] = group_size
 
             # Define base log filename
@@ -74,6 +94,8 @@ def evaluate_model(hyper_params, data, train_model, s):
 
             # **1. Individual Recommendation (individual=True)**
             hyper_params['individual'] = True
+            hyper_params['aggregation'] = 'N/A'
+            hyper_params['similarity_threshold'] = 'N/A'
             hyper_params['log_file'] = f"./results/logs/{get_common_path(hyper_params)}.txt"
             print(f"Running group evaluation (log: {hyper_params['log_file']})")
             print(hyper_params)
@@ -97,21 +119,121 @@ def evaluate_model(hyper_params, data, train_model, s):
             test_metrics, preds = evaluate(rating, hyper_params, data, item_propensity, None, test_set_eval=True)
             log_end_epoch(hyper_params, test_metrics, 0, 0)
 
+            # **4. Group Recommendation with LeastMisery Aggregation**
+            hyper_params['aggregation'] = 'LeastMisery'
+            hyper_params['log_file'] = f"./results/logs/{get_common_path(hyper_params)}.txt"
+            print(f"Running individual evaluation (LeastMisery) (log: {hyper_params['log_file']})")
+            print(hyper_params)
+            test_metrics, preds = evaluate(rating, hyper_params, data, item_propensity, None, test_set_eval=True)
+            log_end_epoch(hyper_params, test_metrics, 0, 0)
+
+            print(f"Finished evaluations for cluster={cluster}, group_size={group_size}\n")
+
+
+    hyper_params['grouping_method'] = 'KNN'
+
+    for similarity in SIMILARITY_THRESHOLDS_KNN:
+        for group_size in GROUP_SIZES_KNN:
+            print(f"\nEvaluating with similarity={similarity}, group_size={group_size}")
+
+            # Update clustering/grouping hyperparameters
+            hyper_params['similarity_threshold'] = similarity
+            hyper_params['group_size'] = group_size
+
+            # Define base log filename
+            base_log_path = f"./results/logs/{get_common_path(hyper_params)}"
+
+            # **1. Individual Recommendation (individual=True)**
+            hyper_params['individual'] = True
+            hyper_params['aggregation'] = 'N/A'
+            hyper_params['n_clusters'] = 'N/A'
+            hyper_params['log_file'] = f"./results/logs/{get_common_path(hyper_params)}.txt"
+            print(f"Running group evaluation (log: {hyper_params['log_file']})")
+            print(hyper_params)
+            test_metrics, preds = evaluate(rating, hyper_params, data, item_propensity, None, test_set_eval=True)
+            log_end_epoch(hyper_params, test_metrics, 0, 0)
+
+            # **2. Group Recommendation with Average Aggregation**
+            hyper_params['individual'] = False
+            hyper_params['aggregation'] = 'Average'
+            hyper_params['log_file'] = f"./results/logs/{get_common_path(hyper_params)}.txt"
+            print(f"Running individual evaluation (Average) (log: {hyper_params['log_file']})")
+            print(hyper_params)
+            test_metrics, preds = evaluate(rating, hyper_params, data, item_propensity, None, test_set_eval=True)
+            log_end_epoch(hyper_params, test_metrics, 0, 0)
+
+            # **3. Group Recommendation with BordaCount Aggregation**
+            hyper_params['aggregation'] = 'BordaCount'
+            hyper_params['log_file'] = f"./results/logs/{get_common_path(hyper_params)}.txt"
+            print(f"Running individual evaluation (BordaCount) (log: {hyper_params['log_file']})")
+            print(hyper_params)
+            test_metrics, preds = evaluate(rating, hyper_params, data, item_propensity, None, test_set_eval=True)
+            log_end_epoch(hyper_params, test_metrics, 0, 0)
+
+            # **4. Group Recommendation with LeastMisery Aggregation**
+            hyper_params['aggregation'] = 'LeastMisery'
+            hyper_params['log_file'] = f"./results/logs/{get_common_path(hyper_params)}.txt"
+            print(f"Running individual evaluation (LeastMisery) (log: {hyper_params['log_file']})")
+            print(hyper_params)
+            test_metrics, preds = evaluate(rating, hyper_params, data, item_propensity, None, test_set_eval=True)
+            log_end_epoch(hyper_params, test_metrics, 0, 0)
+
             print(f"Finished evaluations for similarity={similarity}, group_size={group_size}\n")
 
 
-def top_pop(hyper_params, data, topk=10):
-    item_count = np.zeros(hyper_params['num_items'])
-    
-    # Get the top popular items
-    for u, i, r in data.data['train']:
-        item_count[i] += 1
 
-    top_items = np.argsort(item_count)[::-1][:topk]
-    return top_items
+    hyper_params['grouping_method'] = 'ContentBasedPCC'
 
-def evaluate_top_pop(hyper_params, data, topk=10):
-    top_items = top_pop(hyper_params, data, topk)
+    for similarity in SIMILARITY_THRESHOLDS_CB:
+        for group_size in GROUP_SIZES_CB:
+            print(f"\nEvaluating with similarity={similarity}, group_size={group_size}")
+
+            # Update clustering/grouping hyperparameters
+            hyper_params['similarity_threshold'] = similarity
+            hyper_params['group_size'] = group_size
+
+            # Define base log filename
+            base_log_path = f"./results/logs/{get_common_path(hyper_params)}"
+
+            # **1. Individual Recommendation (individual=True)**
+            hyper_params['individual'] = True
+            hyper_params['aggregation'] = 'N/A'
+            hyper_params['n_clusters'] = 'N/A'
+            hyper_params['log_file'] = f"./results/logs/{get_common_path(hyper_params)}.txt"
+            print(f"Running group evaluation (log: {hyper_params['log_file']})")
+            print(hyper_params)
+            test_metrics, preds = evaluate(rating, hyper_params, data, item_propensity, None, test_set_eval=True)
+            log_end_epoch(hyper_params, test_metrics, 0, 0)
+
+            # **2. Group Recommendation with Average Aggregation**
+            hyper_params['individual'] = False
+            hyper_params['aggregation'] = 'Average'
+            hyper_params['log_file'] = f"./results/logs/{get_common_path(hyper_params)}.txt"
+            print(f"Running individual evaluation (Average) (log: {hyper_params['log_file']})")
+            print(hyper_params)
+            test_metrics, preds = evaluate(rating, hyper_params, data, item_propensity, None, test_set_eval=True)
+            log_end_epoch(hyper_params, test_metrics, 0, 0)
+
+            # **3. Group Recommendation with BordaCount Aggregation**
+            hyper_params['aggregation'] = 'BordaCount'
+            hyper_params['log_file'] = f"./results/logs/{get_common_path(hyper_params)}.txt"
+            print(f"Running individual evaluation (BordaCount) (log: {hyper_params['log_file']})")
+            print(hyper_params)
+            test_metrics, preds = evaluate(rating, hyper_params, data, item_propensity, None, test_set_eval=True)
+            log_end_epoch(hyper_params, test_metrics, 0, 0)
+
+            # **4. Group Recommendation with LeastMisery Aggregation**
+            hyper_params['aggregation'] = 'LeastMisery'
+            hyper_params['log_file'] = f"./results/logs/{get_common_path(hyper_params)}.txt"
+            print(f"Running individual evaluation (LeastMisery) (log: {hyper_params['log_file']})")
+            print(hyper_params)
+            test_metrics, preds = evaluate(rating, hyper_params, data, item_propensity, None, test_set_eval=True)
+            log_end_epoch(hyper_params, test_metrics, 0, 0)
+
+            print(f"Finished evaluations for similarity={similarity}, group_size={group_size}\n")
+
+
+    print("Finished all evaluations\n")
 
     
 
@@ -199,7 +321,9 @@ if __name__ == "__main__":
     #hyper_params['similarity_threshold'] = 0.9
     #hyper_params['group_size'] = 10
 
-    #hyper_params['k'] = 148
+    hyper_params['k'] = 148
+    
+    #hyper_params['individual'] = False
     #print(hyper_params)
 
     #test_eval(hyper_params)
