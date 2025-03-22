@@ -3,7 +3,6 @@ from torch import nn
 import numpy as np
 from tqdm import tqdm
 
-
 class EASE(nn.Module):
     def __init__(self, adj_mat, item_adj, device='cuda:0'):
         super(EASE, self).__init__()
@@ -25,6 +24,10 @@ class EASE(nn.Module):
 class SVD_AE(nn.Module):
     def __init__(self, adj_mat, norm_adj, user_sv, item_sv, device='cuda:0', batch_size=10000):
         super(SVD_AE, self).__init__()
+        self.adj_mat = adj_mat.to(device)
+        self.norm_adj = norm_adj.to(device)
+        self.user_sv = user_sv.to(device)  # (M, K)
+        self.item_sv = item_sv.to(device)  # (N, K)
         self.device = device
         self.batch_size = batch_size
 
