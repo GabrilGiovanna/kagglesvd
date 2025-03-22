@@ -1,5 +1,4 @@
 import numpy as np
-from numba import jit, float64
 import time
 from tqdm import tqdm
 import pandas as pd
@@ -105,8 +104,6 @@ def evaluate(rating, hyper_params, data, item_propensity, train_x, topk = [1, 5,
         print('Training time: {}'.format(train_time))
 
     y_binary, preds = np.array(y_binary), np.array(preds)
-    if (True not in np.isnan(y_binary)) and (True not in np.isnan(preds)):
-        metrics['AUC'] = round(fast_auc(y_binary, preds), 4)
     
     for kind in [ 'HR', 'NDCG', 'PSP', 'RECALL', 'PRECISION', 'MRR' ]: # [ 'HR', 'NDCG', 'PSP' ]:
         for k in topk: 
@@ -186,12 +183,3 @@ def evaluate_batch(auc_negatives, logits, train_positive, test_positive_set, ite
             metrics[f'PSP@{k}'] += psp / max_psp if max_psp > 0 else 0
     
     return metrics, temp_preds, temp_y
-    
-@jit(float64(float64[:], float64[:]))
-def fast_auc(y_true, y_prob):
-    y_true = y_true[np.argsort(y_prob)]
-    nfalse, auc = 0, 0
-    for i in range(len(y_true)):
-        nfalse += (1 - y_true[i])
-        auc += y_true[i] * nfalse
-    return auc / (nfalse * (len(y_true) - nfalse))
