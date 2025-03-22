@@ -26,10 +26,10 @@ class EASE(nn.Module):
 class SVD_AE(nn.Module):
     def __init__(self, adj_mat, norm_adj, user_sv, item_sv, device='cuda:0', batch_size=10000):
         super(SVD_AE, self).__init__()
-        self.adj_mat = adj_mat.todense().to(device)
-        self.norm_adj = norm_adj.todense().to(device)
-        self.user_sv = user_sv.todense().to(device)  # (M, K)
-        self.item_sv = item_sv.todense().to(device)  # (N, K)
+        self.adj_mat = adj_mat.to_dense().to(device)
+        self.norm_adj = norm_adj.to_dense().to(device)
+        self.user_sv = user_sv.to_dense().to(device)  # (M, K)
+        self.item_sv = item_sv.to_dense().to(device)  # (N, K)
         self.device = device
         self.batch_size = batch_size
 
