@@ -6,8 +6,8 @@ from dataset import SteamRSDataset, MovieLensRSDataset, dataset_factory
 from grouping import FCMWithPCCGrouping , grouping_factory
 from aggregation.aggregation import Average, BordaCount
 from aggregation import aggregation_factory
-import torch_xla
-import torch_xla.core.xla_model as xm
+#import torch_xla
+#import torch_xla.core.xla_model as xm
 
 INF = float(1e6)
 
@@ -65,26 +65,36 @@ def evaluate(rating, hyper_params, data, item_propensity, train_x, topk = [1, 5,
     
     unique_users_map = [u_map[user_group] for user_group in unique_users]
 
+    group_map = [groups.get_user_group(user) for user in unique_users]
+
+    group_ids = []
+
+    for group in group_map:
+        group_ids.append([u_map[user] for user in group])
+
+
+
+    
     #user_id = list(u_map.keys())[list(u_map.values()).index(user)]
     
     if hyper_params['individual']== False:
-        for i, user in tqdm(enumerate(unique_users_map)):
+        for i, user in tqdm(enumerate(unique_users_map),total = len(unique_users_map)):
 
-            t0 = torch.randn(10, 10, device=xm.xla_device())
-            t1 = torch.randn(10, 10, device=xm.xla_device())
-            t2 = t0 + t1
+            #t0 = torch.randn(10, 10, device=xm.xla_device())
+            #t1 = torch.randn(10, 10, device=xm.xla_device())
+            #t2 = t0 + t1
 
-            user_id = unique_users[i]
-            group = groups.get_user_group(user_id)
-            group = [u_map[user_group] for user_group in unique_users]
+            #user_id = unique_users[i]
+            group_user = group_ids[i]
+            
             if hyper_params['aggregation'] == 'BordaCount':
                 test_indices = list(data.data['test_positive_set'][user])
                 neg_indices = data.data['negatives'][user].tolist()
-                rating_group = rating[group]
+                rating_group = rating[group_user]
                 rating_group = rating_group[:,test_indices+neg_indices]
                 temp_preds[user,test_indices+neg_indices] = aggregation.aggregate_pytorch(rating_group).to(torch.float)
             else:
-                rating_group = rating[group]
+                rating_group = rating[group_user]
                 temp_preds[user] = aggregation.aggregate_pytorch(rating_group)
     
     #get unique users in list_of_group_users and get temp_preds only for those users

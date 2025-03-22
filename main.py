@@ -16,8 +16,8 @@ from grouping import grouping_factory
 from eval import evaluate
 from aggregation.aggregation import Average, BordaCount
 import torch
-import torch_xla
-import torch_xla.core.xla_model as xm
+#import torch_xla
+#import torch_xla.core.xla_model as xm
 
 args = parse_args()
 
@@ -51,9 +51,9 @@ def evaluate_model(hyper_params, data, train_model, s):
 
     # Iterate through different cluster and group sizes
     #clusters = [5,10,20]
-    group_sizes = [5,10]
-    SIMILARITY_THRESHOLDS = [0.8, 0.9]
-    #group_sizes = [5, 10, 20, 50]
+    #group_sizes = [5,10]
+    SIMILARITY_THRESHOLDS = [0.7,0.8, 0.9]
+    group_sizes = [5, 10, 20, 50]
     #clusters = [10,20]
     #group_sizes = [50,100,200,500]
     # Convert model output tensor
@@ -161,7 +161,7 @@ def test_eval(hyper_params):
 
     #device = 'cpu'
     s = s.to(device='cpu')
-    s = s.to(device)
+    #s = s.to(device)
     rating = train_model(s)
 
     item_propensity = get_item_propensity(hyper_params, data)
