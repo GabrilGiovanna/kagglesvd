@@ -19,11 +19,15 @@ from grouping import grouping_factory
 from eval import evaluate
 from aggregation.aggregation import Average, BordaCount
 import torch
+import torch_xla
+import torch_xla.core.xla_model as xm
 
 args = parse_args()
 
 def train(hyper_params, data):
     from model import make_kernelized_rr_forward
+
+    device = xm.xla_device()
 
     # Instantiate the function
     kernelized_rr_forward, kernel_fn = make_kernelized_rr_forward(hyper_params)
@@ -32,7 +36,7 @@ def train(hyper_params, data):
         adj_mat = data.data['train_matrix'] + data.data['val_matrix']
         PATH = os.getcwd()
         adj_mat, norm_adj, ut, s, vt = preprocess_svd(hyper_params['load'], hyper_params['dataset'], adj_mat, hyper_params['k'], os.path.join(PATH, 'checkpoints'), device)
-        train_model = model.SVD_AE(adj_mat, norm_adj, ut, vt, device='cpu')
+        train_model = model.SVD_AE(adj_mat, norm_adj, ut, vt, device)
     else:
         print('This model is not supported!')
         exit()
@@ -45,6 +49,8 @@ def evaluate_model(hyper_params, data, train_model, s, kernelized_rr_forward):
     from aggregation.aggregation import Average, BordaCount
     import torch
 
+    device = xm.xla_device()
+
     item_propensity = get_item_propensity(hyper_params, data)
 
     # Iterate through different cluster and group sizes
@@ -55,7 +61,8 @@ def evaluate_model(hyper_params, data, train_model, s, kernelized_rr_forward):
     #clusters = [10,20]
     #group_sizes = [50,100,200,500]
     # Convert model output tensor
-    s = s.to(device='cpu')
+    #s = s.to(device='cpu')
+    s = s.to(device)
     rating = train_model(s)
 
     for similarity in SIMILARITY_THRESHOLDS:
@@ -154,7 +161,10 @@ def test_eval(hyper_params):
     # Train model once
     train_model, s, kernelized_rr_forward = train(hyper_params, data)
 
-    s = s.to(device='cpu')
+    device = xm.xla_device()
+
+    #s = s.to(device='cpu')
+    s = s.to(device)
     rating = train_model(s)
 
     item_propensity = get_item_propensity(hyper_params, data)
@@ -171,9 +181,16 @@ if __name__ == "__main__":
     from aggregation import aggregation_factory
     from hyper_params import hyper_params
     from data import Dataset
+    import torch
+    import torch_xla
+    import torch_xla.core.xla_model as xm
     set_seed(hyper_params['seed'])
-    GPU = torch.cuda.is_available()
-    device = torch.device('cuda:0' if GPU else 'cpu')
+    #GPU = torch.cuda.is_available()
+    #device = torch.device('cuda:0' if GPU else 'cpu')
+
+    # TPU
+    device = xm.xla_device()
+
 
     # Ml-latest-small dataset
     #hyper_params['dataset'] = 'ml-latest-small'
