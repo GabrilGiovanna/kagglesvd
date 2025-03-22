@@ -151,9 +151,9 @@ def preprocess_svd(LOAD, dataset, adj_mat, k, path, device):
 
 
     # norm_adj = norm_adj.to_dense()
-    ut = torch.FloatTensor(ut)
-    s = torch.FloatTensor(s)
-    vt = torch.FloatTensor(vt)
+    ut = torch.tensor(ut)
+    s = torch.tensor(s)
+    vt = torch.tensor(vt)
     # end = time.time()
     print('Pre-processing time: ', end - start)
     return adj_mat, norm_adj, ut, s, vt

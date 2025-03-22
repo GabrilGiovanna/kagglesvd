@@ -26,11 +26,12 @@ class EASE(nn.Module):
 class SVD_AE(nn.Module):
     def __init__(self, adj_mat, norm_adj, user_sv, item_sv, device='cuda:0', batch_size=10000):
         super(SVD_AE, self).__init__()
+        self.device = device
         self.adj_mat = adj_mat
         self.norm_adj = norm_adj
-        self.user_sv = user_sv  # (M, K)
-        self.item_sv = item_sv  # (N, K)
-        self.device = device
+        self.user_sv = user_sv.to(self.device)  # (M, K)
+        self.item_sv = item_sv.to(self.device)  # (N, K)
+        
         self.batch_size = batch_size
 
     @staticmethod
@@ -89,7 +90,7 @@ class SVD_AE(nn.Module):
             batch_item_sv = self.item_sv[start_item_sv:end_item_sv, :]  # (batch_size, K)
 
             # Compute batch-wise interaction
-            batch_ratings = torch.mm(batch_item_sv, scaled_user_sv).to(self.device) # (batch_size, user_size)
+            batch_ratings = torch.mm(batch_item_sv, scaled_user_sv) # (batch_size, user_size)
 
             for start_adj_mat in range(0, self.adj_mat.shape[1], self.batch_size):
                 print(f"Step 1: start_adj_mat{start_adj_mat}\n")

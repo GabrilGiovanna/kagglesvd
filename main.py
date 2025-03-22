@@ -25,6 +25,7 @@ def train(hyper_params, data):
 
     device = xm.xla_device()
 
+    #device = 'cpu'
 
     if hyper_params['model'] == 'svd-ae':
         adj_mat = data.data['train_matrix'] + data.data['val_matrix']
@@ -45,6 +46,7 @@ def evaluate_model(hyper_params, data, train_model, s):
 
     device = xm.xla_device()
 
+    #device = 'cpu'
     item_propensity = get_item_propensity(hyper_params, data)
 
     # Iterate through different cluster and group sizes
@@ -157,6 +159,7 @@ def test_eval(hyper_params):
 
     device = xm.xla_device()
 
+    #device = 'cpu'
     #s = s.to(device='cpu')
     s = s.to(device)
     rating = train_model(s)
@@ -176,8 +179,6 @@ if __name__ == "__main__":
     from hyper_params import hyper_params
     from data import Dataset
     import torch
-    import torch_xla
-    import torch_xla.core.xla_model as xm
     set_seed(hyper_params['seed'])
     #GPU = torch.cuda.is_available()
     #device = torch.device('cuda:0' if GPU else 'cpu')
@@ -199,7 +200,7 @@ if __name__ == "__main__":
     #hyper_params['group_size'] = 10
 
     #hyper_params['k'] = 148
-    print(hyper_params)
+    #print(hyper_params)
 
     #test_eval(hyper_params)
     #train_ds, val_ds, test_ds = dataset_factory(SteamRSDataset.code())
