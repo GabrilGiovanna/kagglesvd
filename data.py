@@ -1,5 +1,4 @@
 from scipy.sparse import csr_matrix
-import jax.numpy as jnp
 import numpy as np
 import copy
 import h5py

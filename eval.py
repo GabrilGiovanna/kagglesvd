@@ -1,6 +1,4 @@
-import jax
 import numpy as np
-import jax.numpy as jnp
 from numba import jit, float64
 import time
 from tqdm import tqdm
@@ -12,7 +10,7 @@ from aggregation import aggregation_factory
 
 INF = float(1e6)
 
-def evaluate(rating, hyper_params, kernelized_rr_forward, data, item_propensity, train_x, topk = [1, 5, 10, 20, 50, 100 ], test_set_eval = False):
+def evaluate(rating, hyper_params, data, item_propensity, train_x, topk = [1, 5, 10, 20, 50, 100 ], test_set_eval = False):
     preds, y_binary, metrics = [], [], {}
     for kind in [ 'HR', 'NDCG', 'PSP', 'RECALL', 'PRECISION', 'MRR' ]: # [ 'HR', 'NDCG', 'PSP' ]:
         for k in topk: 
@@ -102,38 +100,6 @@ def evaluate(rating, hyper_params, kernelized_rr_forward, data, item_propensity,
 
     preds += temp_preds
     y_binary += temp_y
-
-
-    """ for i in tqdm(range(0, hyper_params['num_users'], bsz)):
-        if hyper_params['model'] == 'ease' or hyper_params['model'] == 'svd-ae':
-            end = min(i+bsz, hyper_params['num_users'])
-            #import jax.experimental.sparse as jax_sparse
-            #temp_preds = jax_sparse.BCOO.from_scipy_sparse(rating.to_sparse().cpu().coalesce().to_scipy())
-            #temp_preds=jax_sparse.BCOO.from_scipy_sparse(rating)
-            #temp_preds = jnp.array(rating)
-            #temp_preds = jnp.array(rating.to_dense().cpu())
-            #temp_preds_copy = temp_preds.copy()
-            temp_preds = rating
-            predicted_rating = temp_preds
-        else:
-            train_start_time = time.time()
-            temp_preds = kernelized_rr_forward(train_x, eval_context[i:end].todense(), reg = hyper_params['lamda'])
-            #temp_preds_copy = temp_preds.copy()
-            temp_train_time = time.time() - train_start_time
-            train_time += temp_train_time
-            predicted_rating = temp_preds # predicted_rating_score
-        #if i == 0:
-            #print('Train_positive_list:', train_positive_list[0])
-            #print('To_predict:', to_predict[0])
-            #print('temp_preds:', temp_preds[0])
-        metrics, temp_preds, temp_y = evaluate_batch(
-            data.data['negatives'][i:end], np.array(temp_preds[i:end]), 
-            train_positive_list[i:end], to_predict[i:end], item_propensity, 
-            topk, metrics
-        )
-        #print(to_predict[i:end])
-        preds += temp_preds
-        y_binary += temp_y """
 
     if hyper_params['model'] == 'inf-ae':
         print('Training time: {}'.format(train_time))

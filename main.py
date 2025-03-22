@@ -8,9 +8,6 @@ import copy
 import random
 import numpy as np
 import torch
-import jax
-from jax import numpy as jnp
-import jax.experimental.sparse as jax_sparse
 
 import model
 from parse import parse_args
@@ -25,12 +22,9 @@ import torch_xla.core.xla_model as xm
 args = parse_args()
 
 def train(hyper_params, data):
-    from model import make_kernelized_rr_forward
 
     device = xm.xla_device()
 
-    # Instantiate the function
-    kernelized_rr_forward, kernel_fn = make_kernelized_rr_forward(hyper_params)
 
     if hyper_params['model'] == 'svd-ae':
         adj_mat = data.data['train_matrix'] + data.data['val_matrix']
@@ -41,10 +35,10 @@ def train(hyper_params, data):
         print('This model is not supported!')
         exit()
 
-    return train_model, s, kernelized_rr_forward
+    return train_model, s
 
 
-def evaluate_model(hyper_params, data, train_model, s, kernelized_rr_forward):
+def evaluate_model(hyper_params, data, train_model, s):
     from eval import evaluate
     from aggregation.aggregation import Average, BordaCount
     import torch
@@ -81,7 +75,7 @@ def evaluate_model(hyper_params, data, train_model, s, kernelized_rr_forward):
             hyper_params['log_file'] = f"./results/logs/{get_common_path(hyper_params)}.txt"
             print(f"Running group evaluation (log: {hyper_params['log_file']})")
             print(hyper_params)
-            test_metrics, preds = evaluate(rating, hyper_params, kernelized_rr_forward, data, item_propensity, None, test_set_eval=True)
+            test_metrics, preds = evaluate(rating, hyper_params, data, item_propensity, None, test_set_eval=True)
             log_end_epoch(hyper_params, test_metrics, 0, 0)
 
             # **2. Group Recommendation with Average Aggregation**
@@ -90,7 +84,7 @@ def evaluate_model(hyper_params, data, train_model, s, kernelized_rr_forward):
             hyper_params['log_file'] = f"./results/logs/{get_common_path(hyper_params)}.txt"
             print(f"Running individual evaluation (Average) (log: {hyper_params['log_file']})")
             print(hyper_params)
-            test_metrics, preds = evaluate(rating, hyper_params, kernelized_rr_forward, data, item_propensity, None, test_set_eval=True)
+            test_metrics, preds = evaluate(rating, hyper_params, data, item_propensity, None, test_set_eval=True)
             log_end_epoch(hyper_params, test_metrics, 0, 0)
 
             # **3. Group Recommendation with BordaCount Aggregation**
@@ -98,7 +92,7 @@ def evaluate_model(hyper_params, data, train_model, s, kernelized_rr_forward):
             hyper_params['log_file'] = f"./results/logs/{get_common_path(hyper_params)}.txt"
             print(f"Running individual evaluation (BordaCount) (log: {hyper_params['log_file']})")
             print(hyper_params)
-            test_metrics, preds = evaluate(rating, hyper_params, kernelized_rr_forward, data, item_propensity, None, test_set_eval=True)
+            test_metrics, preds = evaluate(rating, hyper_params, data, item_propensity, None, test_set_eval=True)
             log_end_epoch(hyper_params, test_metrics, 0, 0)
 
             print(f"Finished evaluations for similarity={similarity}, group_size={group_size}\n")
@@ -136,11 +130,11 @@ def main(hyper_params, gpu_id=None):
     hyper_params = copy.deepcopy(data.hyper_params)  # Updated w/ data-stats
 
     # Train model once
-    train_model, s, kernelized_rr_forward = train(hyper_params, data)
+    train_model, s = train(hyper_params, data)
 
 
     # Evaluate multiple times with different settings
-    evaluate_model(hyper_params, data, train_model, s, kernelized_rr_forward)
+    evaluate_model(hyper_params, data, train_model, s)
 
 
 def test_eval(hyper_params):
@@ -159,7 +153,7 @@ def test_eval(hyper_params):
     hyper_params = copy.deepcopy(data.hyper_params)  # Updated w/ data-stats
 
     # Train model once
-    train_model, s, kernelized_rr_forward = train(hyper_params, data)
+    train_model, s = train(hyper_params, data)
 
     device = xm.xla_device()
 
@@ -171,7 +165,7 @@ def test_eval(hyper_params):
 
     hyper_params['log_file'] = f"./results/logs/{get_common_path(hyper_params)}.txt"
 
-    test_metrics, preds = evaluate(rating, hyper_params, kernelized_rr_forward, data, item_propensity, None, test_set_eval=True)
+    test_metrics, preds = evaluate(rating, hyper_params, data, item_propensity, None, test_set_eval=True)
     log_end_epoch(hyper_params, test_metrics, 0, 0)
 
 if __name__ == "__main__":
