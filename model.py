@@ -104,7 +104,7 @@ class SVD_AE(nn.Module):
                     print(f"Step 2: start_norm_adj{start_norm_adj}\n")
                     end_norm_adj = min(start_norm_adj + self.batch_size, num_users)
                     norm_adj_batch = self.__slice_sparse_rows(self.norm_adj, range(start_norm_adj, end_norm_adj))
-                    rating[start_norm_adj:end_norm_adj, start_adj_mat:end_adj_mat] += (norm_adj_batch.to_dense()[:, start_item_sv:end_item_sv].to(self.device) @ batch_ratings_adj).cpu()
+                    rating[start_norm_adj:end_norm_adj, start_adj_mat:end_adj_mat] += (norm_adj_batch.to_dense()[:, start_item_sv:end_item_sv].to(self.device) @ batch_ratings_adj).detach().cpu()
 
         return rating
 
