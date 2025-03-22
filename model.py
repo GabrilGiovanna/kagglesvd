@@ -82,7 +82,7 @@ class SVD_AE(nn.Module):
         scaled_user_sv = inv_lambda[:, None] * self.user_sv.T
         num_users = self.user_sv.shape[0]
         num_items = self.item_sv.shape[0]
-        rating = torch.zeros((num_users, num_items), device=self.device)
+        rating = torch.zeros((num_users, num_items), device='cpu')
         for start_item_sv in tqdm(range(0, self.item_sv.shape[0], self.batch_size), desc='Computing ratings by batches'):
             end_item_sv = min(start_item_sv + self.batch_size, num_items)
 
@@ -104,7 +104,7 @@ class SVD_AE(nn.Module):
                     print(f"Step 2: start_norm_adj{start_norm_adj}\n")
                     end_norm_adj = min(start_norm_adj + self.batch_size, num_users)
                     norm_adj_batch = self.__slice_sparse_rows(self.norm_adj, range(start_norm_adj, end_norm_adj))
-                    rating[start_norm_adj:end_norm_adj, start_adj_mat:end_adj_mat] += norm_adj_batch.to_dense()[:, start_item_sv:end_item_sv].to(self.device) @ batch_ratings_adj
+                    rating[start_norm_adj:end_norm_adj, start_adj_mat:end_adj_mat] += (norm_adj_batch.to_dense()[:, start_item_sv:end_item_sv].to(self.device) @ batch_ratings_adj).cpu()
 
         return rating
 
