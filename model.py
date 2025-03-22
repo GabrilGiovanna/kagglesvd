@@ -1,4 +1,3 @@
-import functools
 import torch
 from torch import nn
 import numpy as np
@@ -24,14 +23,9 @@ class EASE(nn.Module):
 
 
 class SVD_AE(nn.Module):
-    def __init__(self, adj_mat, norm_adj, user_sv, item_sv, device='cuda:0', batch_size=8000):
+    def __init__(self, adj_mat, norm_adj, user_sv, item_sv, device='cuda:0', batch_size=10000):
         super(SVD_AE, self).__init__()
         self.device = device
-        self.adj_mat = adj_mat
-        self.norm_adj = norm_adj
-        self.user_sv = user_sv  # (M, K)
-        self.item_sv = item_sv  # (N, K)
-        
         self.batch_size = batch_size
 
     @staticmethod
@@ -79,33 +73,32 @@ class SVD_AE(nn.Module):
         inv_lambda = 1 / lambda_mat
 
         # Element wise multiplication instead of matrix mult with diagonal matrix
-        scaled_user_sv = (inv_lambda[:, None] * self.user_sv.T).to(self.device)
+        scaled_user_sv = inv_lambda[:, None] * self.user_sv.T
         num_users = self.user_sv.shape[0]
         num_items = self.item_sv.shape[0]
-        rating = torch.zeros((num_users, num_items), device='cpu')
+        rating = torch.zeros((num_users, num_items), device=self.device)
         for start_item_sv in tqdm(range(0, self.item_sv.shape[0], self.batch_size), desc='Computing ratings by batches'):
             end_item_sv = min(start_item_sv + self.batch_size, num_items)
 
             # Compute the batch slice for items
-            batch_item_sv = self.item_sv[start_item_sv:end_item_sv, :].to(self.device)  # (batch_size, K)
+            batch_item_sv = self.item_sv[start_item_sv:end_item_sv, :]  # (batch_size, K)
 
             # Compute batch-wise interaction
             batch_ratings = torch.mm(batch_item_sv, scaled_user_sv) # (batch_size, user_size)
 
             for start_adj_mat in range(0, self.adj_mat.shape[1], self.batch_size):
-                #print(f"Step 1: start_adj_mat{start_adj_mat}\n")
+                print(f"Step 1: start_adj_mat{start_adj_mat}\n")
                 end_adj_mat = min(start_adj_mat + self.batch_size, num_items)
                 # Slice adj_mat and norm_adj
                 adj_mat_batch = self.__slice_sparse_columns(self.adj_mat, range(start_adj_mat, end_adj_mat))
-                adj_mat_batch = adj_mat_batch.to_dense().to(self.device)
+
                 # Apply adjacency matrices
-                batch_ratings_adj = torch.mm(batch_ratings, adj_mat_batch)
-                for start_norm_adj in tqdm(range(0, self.norm_adj.shape[0], self.batch_size), desc='Computing ratings by batches, start: {}'.format(start_adj_mat)):
-                    #print(f"Step 2: start_norm_adj{start_norm_adj}\n")
+                batch_ratings_adj = torch.mm(batch_ratings, adj_mat_batch.to_dense())
+                for start_norm_adj in range(0, self.norm_adj.shape[0], self.batch_size):
+                    print(f"Step 2: start_norm_adj{start_norm_adj}\n")
                     end_norm_adj = min(start_norm_adj + self.batch_size, num_users)
                     norm_adj_batch = self.__slice_sparse_rows(self.norm_adj, range(start_norm_adj, end_norm_adj))
-                    norm_adj_batch = norm_adj_batch.to_dense()[:, start_item_sv:end_item_sv].to(self.device)
-                    rating[start_norm_adj:end_norm_adj, start_adj_mat:end_adj_mat] += (norm_adj_batch @ batch_ratings_adj).cpu()
+                    rating[start_norm_adj:end_norm_adj, start_adj_mat:end_adj_mat] += norm_adj_batch.to_dense()[:, start_item_sv:end_item_sv] @ batch_ratings_adj
 
         return rating
 

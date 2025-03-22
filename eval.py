@@ -6,6 +6,8 @@ from dataset import SteamRSDataset, MovieLensRSDataset, dataset_factory
 from grouping import FCMWithPCCGrouping , grouping_factory
 from aggregation.aggregation import Average, BordaCount
 from aggregation import aggregation_factory
+import torch_xla
+import torch_xla.core.xla_model as xm
 
 INF = float(1e6)
 
@@ -62,9 +64,15 @@ def evaluate(rating, hyper_params, data, item_propensity, train_x, topk = [1, 5,
 
     
     unique_users_map = [u_map[user_group] for user_group in unique_users]
+
     
     if hyper_params['individual']== False:
         for user in tqdm(unique_users_map):
+
+            t0 = torch.randn(2, 2, device=xm.xla_device())
+            t1 = torch.randn(2, 2, device=xm.xla_device())
+            t2 = t0 + t1
+
             user_id = list(u_map.keys())[list(u_map.values()).index(user)]
             group = groups.get_user_group(user_id)
             group = [u_map[user_group] for user_group in unique_users]

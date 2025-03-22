@@ -23,9 +23,9 @@ args = parse_args()
 
 def train(hyper_params, data):
 
-    device = xm.xla_device()
+    #device = xm.xla_device()
 
-    #device = 'cpu'
+    device = 'cpu'
 
     if hyper_params['model'] == 'svd-ae':
         adj_mat = data.data['train_matrix'] + data.data['val_matrix']
@@ -44,9 +44,9 @@ def evaluate_model(hyper_params, data, train_model, s):
     from aggregation.aggregation import Average, BordaCount
     import torch
 
-    device = xm.xla_device()
+    #device = xm.xla_device()
 
-    #device = 'cpu'
+    device = 'cpu'
     item_propensity = get_item_propensity(hyper_params, data)
 
     # Iterate through different cluster and group sizes
@@ -157,10 +157,10 @@ def test_eval(hyper_params):
     # Train model once
     train_model, s = train(hyper_params, data)
 
-    device = xm.xla_device()
+    #device = xm.xla_device()
 
     #device = 'cpu'
-    #s = s.to(device='cpu')
+    s = s.to(device='cpu')
     s = s.to(device)
     rating = train_model(s)
 
@@ -184,7 +184,7 @@ if __name__ == "__main__":
     #device = torch.device('cuda:0' if GPU else 'cpu')
 
     # TPU
-    device = xm.xla_device()
+    #device = xm.xla_device()
 
 
     # Ml-latest-small dataset
