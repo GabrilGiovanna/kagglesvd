@@ -54,7 +54,7 @@ def evaluate_model(hyper_params, data, train_model, s):
 
     #Values for ContentBasedPCC
 
-    SIMILARITY_THRESHOLDS_CB = [0.75, 0.8, 0.85, 0.9]
+    SIMILARITY_THRESHOLDS_CB = [0.4, 0.5, 0.6, 0.7,0.8, 0.9]
 
     GROUP_SIZES_CB = [3, 5, 10, 15]
 
