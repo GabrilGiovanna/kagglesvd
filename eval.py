@@ -61,7 +61,7 @@ def evaluate(rating, hyper_params, data, item_propensity, train_x, topk = [1, 5,
 
     unique_users = groups.get_unique_users()
 
-    user_mapping = data.data['user_mapping']
+    #user_mapping = data.data['user_mapping']
 
     
     unique_users_map = [u_map[user_group] for user_group in unique_users]
