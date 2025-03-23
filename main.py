@@ -94,8 +94,8 @@ def evaluate_model(hyper_params, data, train_model, s):
 
             # **1. Individual Recommendation (individual=True)**
             hyper_params['individual'] = True
-            hyper_params['aggregation'] = 'N/A'
-            hyper_params['similarity_threshold'] = 'N/A'
+            hyper_params['aggregation'] = 'NA'
+            hyper_params['similarity_threshold'] = 'NA'
             hyper_params['log_file'] = f"./results/logs/{get_common_path(hyper_params)}.txt"
             print(f"Running group evaluation (log: {hyper_params['log_file']})")
             print(hyper_params)
@@ -145,8 +145,8 @@ def evaluate_model(hyper_params, data, train_model, s):
 
             # **1. Individual Recommendation (individual=True)**
             hyper_params['individual'] = True
-            hyper_params['aggregation'] = 'N/A'
-            hyper_params['n_clusters'] = 'N/A'
+            hyper_params['aggregation'] = 'NA'
+            hyper_params['n_clusters'] = 'NA'
             hyper_params['log_file'] = f"./results/logs/{get_common_path(hyper_params)}.txt"
             print(f"Running group evaluation (log: {hyper_params['log_file']})")
             print(hyper_params)
@@ -197,8 +197,8 @@ def evaluate_model(hyper_params, data, train_model, s):
 
             # **1. Individual Recommendation (individual=True)**
             hyper_params['individual'] = True
-            hyper_params['aggregation'] = 'N/A'
-            hyper_params['n_clusters'] = 'N/A'
+            hyper_params['aggregation'] = 'NA'
+            hyper_params['n_clusters'] = 'NA'
             hyper_params['log_file'] = f"./results/logs/{get_common_path(hyper_params)}.txt"
             print(f"Running group evaluation (log: {hyper_params['log_file']})")
             print(hyper_params)
