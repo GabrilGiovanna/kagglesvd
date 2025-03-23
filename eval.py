@@ -54,7 +54,7 @@ def evaluate(rating, hyper_params, data, item_propensity, train_x, topk = [1, 5,
                             n_clusters= hyper_params['n_clusters'],similarity_threshold = hyper_params['similarity_threshold'])
 
     #aggregation = Average()
-    if hyper_params['aggregation'] != 'N/A':
+    if hyper_params['aggregation'] != 'NA':
         aggregation = aggregation_factory(hyper_params['aggregation'])
 
     temp_preds = torch.zeros(hyper_params['num_users'], hyper_params['num_items'])
