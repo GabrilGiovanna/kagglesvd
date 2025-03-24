@@ -73,6 +73,12 @@ def evaluate(rating, hyper_params, data, item_propensity, train_x, topk = [1, 5,
     for group in group_map:
         group_ids.append([u_map[user] for user in group])
 
+    if len(unique_users_map) = 0:
+        metrics = {}
+        for kind in [ 'HR', 'NDCG', 'PSP', 'RECALL', 'PRECISION', 'MRR' ]: # [ 'HR', 'NDCG', 'PSP' ]:
+            for k in topk: 
+                metrics['{}@{}'.format(kind, k)] = 0.0
+        return metrics, temp_preds
 
 
     
