@@ -130,7 +130,7 @@ def evaluate_model(hyper_params, data, train_model, s):
             print(f"Finished evaluations for cluster={cluster}, group_size={group_size}\n")
 
 
-    hyper_params['grouping_method'] = 'KNN'
+    """ hyper_params['grouping_method'] = 'KNN'
 
     for similarity in SIMILARITY_THRESHOLDS_KNN:
         for group_size in GROUP_SIZES_KNN:
@@ -230,7 +230,7 @@ def evaluate_model(hyper_params, data, train_model, s):
             # test_metrics, preds = evaluate(rating, hyper_params, data, item_propensity, None, test_set_eval=True)
             # log_end_epoch(hyper_params, test_metrics, 0, 0)
             #
-            # print(f"Finished evaluations for similarity={similarity}, group_size={group_size}\n")
+            # print(f"Finished evaluations for similarity={similarity}, group_size={group_size}\n") """
 
 
     print("Finished all evaluations\n")
