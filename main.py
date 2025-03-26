@@ -8,6 +8,7 @@ import copy
 import random
 import numpy as np
 import torch
+import time
 
 import model
 from parse import parse_args
@@ -137,7 +138,7 @@ def evaluate_model(hyper_params, data, train_model, s):
     hyper_params['grouping_method'] = 'ContentBasedPCC'
 
 
-    SIMILARITY_THRESHOLD = [0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+    SIMILARITY_THRESHOLD = [0.6, 0.7, 0.8, 0.9]
     GROUP_SIZE = [3, 5, 10, 15]
 
     for sim_threshold in SIMILARITY_THRESHOLD:
@@ -250,6 +251,7 @@ if __name__ == "__main__":
     from hyper_params import hyper_params
     from data import Dataset
     import torch
+    start = time.time()
     set_seed(hyper_params['seed'])
     #GPU = torch.cuda.is_available()
     #device = torch.device('cuda:0' if GPU else 'cpu')
@@ -271,8 +273,6 @@ if __name__ == "__main__":
     #hyper_params['group_size'] = 10
 
     hyper_params['k'] = 148
-
-
     
     #hyper_params['individual'] = False
     #print(hyper_params)
