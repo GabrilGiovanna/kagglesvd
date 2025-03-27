@@ -69,7 +69,7 @@ def evaluate_model(hyper_params, data, train_model, s):
     hyper_params['log_file'] = f"./results/logs/{get_common_path(hyper_params)}.txt"
     log_end_epoch(hyper_params, test_metrics, 0, 0)
 
-    # **2. Group Recommendation with Average Aggregation**
+    """ # **2. Group Recommendation with Average Aggregation**
     hyper_params['individual'] = False
     hyper_params['aggregation'] = 'Average'
     
@@ -90,7 +90,7 @@ def evaluate_model(hyper_params, data, train_model, s):
     print(hyper_params)
     test_metrics, preds = evaluate(rating, hyper_params, data, item_propensity, None, test_set_eval=True)
     hyper_params['log_file'] = f"./results/logs/{get_common_path(hyper_params)}.txt"
-    log_end_epoch(hyper_params, test_metrics, 0, 0)
+    log_end_epoch(hyper_params, test_metrics, 0, 0) """
 
     print(f"Finished evaluations for FCM\n")
 
@@ -110,7 +110,7 @@ def evaluate_model(hyper_params, data, train_model, s):
     hyper_params['log_file'] = f"./results/logs/{get_common_path(hyper_params)}.txt"
     log_end_epoch(hyper_params, test_metrics, 0, 0)
 
-    # **2. Group Recommendation with Average Aggregation**
+    """ # **2. Group Recommendation with Average Aggregation**
     hyper_params['individual'] = False
     hyper_params['aggregation'] = 'Average'
     print(hyper_params)
@@ -130,7 +130,7 @@ def evaluate_model(hyper_params, data, train_model, s):
     print(hyper_params)
     test_metrics, preds = evaluate(rating, hyper_params, data, item_propensity, None, test_set_eval=True)
     hyper_params['log_file'] = f"./results/logs/{get_common_path(hyper_params)}.txt"
-    log_end_epoch(hyper_params, test_metrics, 0, 0)
+    log_end_epoch(hyper_params, test_metrics, 0, 0) """
 
     print(f"Finished evaluations for KNN\n")
 
@@ -150,7 +150,7 @@ def evaluate_model(hyper_params, data, train_model, s):
     hyper_params['log_file'] = f"./results/logs/{get_common_path(hyper_params)}.txt"
     log_end_epoch(hyper_params, test_metrics, 0, 0)
 
-    # **2. Group Recommendation with Average Aggregation**
+    """ # **2. Group Recommendation with Average Aggregation**
     hyper_params['individual'] = False
     hyper_params['aggregation'] = 'Average'
 
@@ -171,7 +171,7 @@ def evaluate_model(hyper_params, data, train_model, s):
     print(hyper_params)
     test_metrics, preds = evaluate(rating, hyper_params, data, item_propensity, None, test_set_eval=True)
     hyper_params['log_file'] = f"./results/logs/{get_common_path(hyper_params)}.txt"
-    log_end_epoch(hyper_params, test_metrics, 0, 0)
+    log_end_epoch(hyper_params, test_metrics, 0, 0) """
     #
     print(f"Finished evaluations for Content Based\n")
 
@@ -179,6 +179,42 @@ def evaluate_model(hyper_params, data, train_model, s):
     print("Finished all evaluations\n")
 
     
+
+def gridsearch(hyper_params, data, train_model, s):
+    from eval import evaluate
+    from aggregation.aggregation import Average, BordaCount
+    import torch
+
+    #device = xm.xla_device()
+
+    device = 'cpu'
+    item_propensity = get_item_propensity(hyper_params, data)
+
+    
+    # Convert model output tensor
+    #s = s.to(device='cpu')
+    s = s.to(device)
+    rating = train_model(s)
+
+    SIMILARITY_THRESHOLD = [0.6, 0.7, 0.8, 0.9]
+    GROUP_SIZE = [3,5, 10, 15]
+
+
+    hyper_params['grouping_method'] = 'ContentBasedPCC'
+
+    for similarity_threshold in SIMILARITY_THRESHOLD:
+        for group in GROUP_SIZE:
+
+            hyper_params['similarity_threshold'] = similarity_threshold
+            hyper_params['group_size'] = group
+
+            # **2. Group Recommendation with Average Aggregation**
+            hyper_params['individual'] = False
+            hyper_params['aggregation'] = 'Average'
+            print(hyper_params)
+            test_metrics, preds = evaluate(rating, hyper_params, data, item_propensity, None, test_set_eval=True)
+            hyper_params['log_file'] = f"./results/logs/{get_common_path(hyper_params)}.txt"
+            log_end_epoch(hyper_params, test_metrics, 0, 0)
 
 
 
@@ -202,6 +238,9 @@ def main(hyper_params, gpu_id=None):
 
     # Evaluate multiple times with different settings
     evaluate_model(hyper_params, data, train_model, s)
+
+    # Grid search
+    #gridsearch(hyper_params, data, train_model, s)
 
 
 def test_eval(hyper_params):
@@ -262,13 +301,13 @@ if __name__ == "__main__":
     #hyper_params['aggregation'] = 'Average'
     #hyper_params['individual'] = False
     #hyper_params['similarity_threshold'] = 0.9
-    #hyper_params['group_size'] = 10
+    #hyper_params['group_size'] = 5
 
     hyper_params['k'] = 148
 
 
     
-    #hyper_params['individual'] = False
+    #hyper_params['individual'] = True
     #print(hyper_params)
 
     #test_eval(hyper_params)

@@ -116,6 +116,8 @@ def evaluate(rating, hyper_params, data, item_propensity, train_x, topk = [1, 5,
             else:
                 rating_group = rating[group_user]
                 temp_preds[user] = aggregation.aggregate_pytorch(rating_group)
+    else:
+        temp_preds = rating
     
     #get unique users in list_of_group_users and get temp_preds only for those users
    
@@ -184,7 +186,7 @@ def evaluate_batch(auc_negatives, logits, train_positive, test_positive_set, ite
     
     
     # Use torch.topk instead of sorting manually
-    _, indices = torch.topk(logits, max(topk), dim=1, largest=True, sorted=True)
+    _, indices = torch.topk(logits, max(topk) + 1, dim=1, largest=True, sorted=True)
     
     for k in topk:
         for b in range(len(logits)):
