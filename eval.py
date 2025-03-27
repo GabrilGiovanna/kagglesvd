@@ -7,7 +7,6 @@ from grouping import FCMWithPCCGrouping , grouping_factory
 from aggregation.aggregation import Average, BordaCount
 from aggregation import aggregation_factory
 from grouping import GROUPING_STRATEGIES
-import time
 #import torch_xla
 #import torch_xla.core.xla_model as xm
 
@@ -50,22 +49,22 @@ def evaluate(rating, hyper_params, data, item_propensity, train_x, topk = [1, 5,
 
     #groups = FCMWithPCCGrouping(train,group_size = hyper_params['group_size'],n_clusters = hyper_params['n_clusters'])
 
-    """ groups = GROUPING_STRATEGIES[hyper_params['grouping_method']].load_with_best_hyperparams(train, 'SVD-AE')
+    groups = GROUPING_STRATEGIES[hyper_params['grouping_method']].load_with_best_hyperparams(train, 'SVD-AE')
 
 
     hyper_params['group_size'] = groups.group_size
     if groups.is_similarity():
         hyper_params['similarity_threshold'] = groups.similarity_threshold
     else:
-        hyper_params['n_clusters'] = groups.n_clusters """
+        hyper_params['n_clusters'] = groups.n_clusters
         
     #hyper_params['n_clusters'] = groups.n_clusters
     #hyper_params['similarity_threshold'] = groups.similarity_threshold
     
-    groups = grouping_factory(grouping_method= hyper_params['grouping_method'], 
+    """ groups = grouping_factory(grouping_method= hyper_params['grouping_method'], 
                             dataset_name= hyper_params['dataset'],
                             group_size= hyper_params['group_size'], 
-                            n_clusters= hyper_params['n_clusters'],similarity_threshold = hyper_params['similarity_threshold'])
+                            n_clusters= hyper_params['n_clusters'],similarity_threshold = hyper_params['similarity_threshold']) """
 
     #aggregation = Average()
     if hyper_params['aggregation'] != 'NA':
@@ -97,8 +96,6 @@ def evaluate(rating, hyper_params, data, item_propensity, train_x, topk = [1, 5,
 
     
     #user_id = list(u_map.keys())[list(u_map.values()).index(user)]
-
-    start = time.time()
     
     if hyper_params['individual']== False:
         for i, user in tqdm(enumerate(unique_users_map),total = len(unique_users_map)):
@@ -119,9 +116,6 @@ def evaluate(rating, hyper_params, data, item_propensity, train_x, topk = [1, 5,
             else:
                 rating_group = rating[group_user]
                 temp_preds[user] = aggregation.aggregate_pytorch(rating_group)
-
-    end = time.time()
-    print("Time taken for aggregation: ",end-start)
     
     #get unique users in list_of_group_users and get temp_preds only for those users
    
