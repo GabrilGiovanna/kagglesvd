@@ -233,7 +233,7 @@ def gridsearch(hyper_params, data, train_model, s):
             log_end_epoch(hyper_params, test_metrics, 0, 0)
 
 
-    hyper_params['grouping_method'] = 'ContentBasedPCC'
+    """ hyper_params['grouping_method'] = 'ContentBasedPCC'
 
     hyper_params['n_clusters'] = 'NA'
 
@@ -279,7 +279,7 @@ def gridsearch(hyper_params, data, train_model, s):
             print(hyper_params)
             test_metrics, preds = evaluate(rating, hyper_params, data, item_propensity, None, test_set_eval=True)
             hyper_params['log_file'] = f"./results/logs/{get_common_path(hyper_params)}.txt"
-            log_end_epoch(hyper_params, test_metrics, 0, 0)
+            log_end_epoch(hyper_params, test_metrics, 0, 0) """
 
 
 

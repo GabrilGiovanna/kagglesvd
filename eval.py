@@ -7,6 +7,7 @@ from grouping import FCMWithPCCGrouping , grouping_factory
 from aggregation.aggregation import Average, BordaCount
 from aggregation import aggregation_factory
 from grouping import GROUPING_STRATEGIES
+import time
 #import torch_xla
 #import torch_xla.core.xla_model as xm
 
@@ -96,6 +97,8 @@ def evaluate(rating, hyper_params, data, item_propensity, train_x, topk = [1, 5,
 
     
     #user_id = list(u_map.keys())[list(u_map.values()).index(user)]
+
+    start = time.time()
     
     if hyper_params['individual']== False:
         for i, user in tqdm(enumerate(unique_users_map),total = len(unique_users_map)):
@@ -119,6 +122,9 @@ def evaluate(rating, hyper_params, data, item_propensity, train_x, topk = [1, 5,
     else:
         temp_preds = rating
     
+    print('Time taken to aggregate: {}'.format(time.time()-start))
+
+    
     #get unique users in list_of_group_users and get temp_preds only for those users
    
     temp_preds = temp_preds[unique_users_map]
@@ -131,13 +137,16 @@ def evaluate(rating, hyper_params, data, item_propensity, train_x, topk = [1, 5,
     train_positive_list = [train_positive_list[u] for u in unique_users_map]
     to_predict = [to_predict[u] for u in unique_users_map]
 
+
+    start = time.time()
     
     metrics, temp_preds, temp_y = evaluate_batch(
         data.data['negatives'][unique_users_map], np.array(temp_preds), 
         train_positive_list, to_predict, item_propensity, 
         topk, metrics
     )
-
+    
+    print('Time taken to evaluate: {}'.format(time.time()-start))
     preds += temp_preds
     y_binary += temp_y
 
