@@ -232,6 +232,13 @@ def gridsearch(hyper_params, data, train_model, s):
             hyper_params['log_file'] = f"./results/logs/{get_common_path(hyper_params)}.txt"
             log_end_epoch(hyper_params, test_metrics, 0, 0)
 
+            # **4. Group Recommendation with Average Aggregation**
+            hyper_params['aggregation'] = 'Average'
+            print(hyper_params)
+            test_metrics, preds = evaluate(rating, hyper_params, data, item_propensity, None, test_set_eval=True)
+            hyper_params['log_file'] = f"./results/logs/{get_common_path(hyper_params)}.txt"
+            log_end_epoch(hyper_params, test_metrics, 0, 0)
+
 
     hyper_params['grouping_method'] = 'ContentBasedPCC'
 
@@ -258,13 +265,21 @@ def gridsearch(hyper_params, data, train_model, s):
             hyper_params['log_file'] = f"./results/logs/{get_common_path(hyper_params)}.txt"
             log_end_epoch(hyper_params, test_metrics, 0, 0)
 
-    hyper_params['grouping_method'] = 'KNN'
+            # **4. Group Recommendation with Average Aggregation**
+            hyper_params['aggregation'] = 'Average'
+            print(hyper_params)
+            test_metrics, preds = evaluate(rating, hyper_params, data, item_propensity, None, test_set_eval=True)
+            hyper_params['log_file'] = f"./results/logs/{get_common_path(hyper_params)}.txt"
+            log_end_epoch(hyper_params, test_metrics, 0, 0)
 
-    for similarity_threshold in SIMILARITY_THRESHOLD_KNN:
+    #hyper_params['grouping_method'] = 'KNN'
+
+"""     for similarity_threshold in SIMILARITY_THRESHOLD_KNN:
         for group in GROUP_SIZE_CB_KNN:
 
             hyper_params['similarity_threshold'] = similarity_threshold
             hyper_params['group_size'] = group
+
 
             # **2. Group Recommendation with BordaCount Aggregation**
             hyper_params['individual'] = False
@@ -279,7 +294,7 @@ def gridsearch(hyper_params, data, train_model, s):
             print(hyper_params)
             test_metrics, preds = evaluate(rating, hyper_params, data, item_propensity, None, test_set_eval=True)
             hyper_params['log_file'] = f"./results/logs/{get_common_path(hyper_params)}.txt"
-            log_end_epoch(hyper_params, test_metrics, 0, 0)
+            log_end_epoch(hyper_params, test_metrics, 0, 0) """
 
 
 
