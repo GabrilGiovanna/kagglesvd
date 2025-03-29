@@ -65,9 +65,6 @@ def evaluate_model(hyper_params, data, train_model, s):
                 print(hyper_params)
                 test_metrics, preds = evaluate(rating, hyper_params, data, item_propensity, None, test_set_eval=True)
 
-                if individual:
-                    hyper_params['aggregation'] = 'NA'
-
                 hyper_params['log_file'] = f"./results/logs/{get_common_path(hyper_params)}.txt"
                 log_end_epoch(hyper_params, test_metrics, 0, 0)
 
